@@ -61,12 +61,12 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void initState() {
-    AutoScroll(scrollController);
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    AutoScroll(scrollController);
     getThemeFromPreferences();
     return Scaffold(
       appBar: AppBar(

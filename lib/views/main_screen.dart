@@ -68,7 +68,6 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     getThemeFromPreferences();
-    getUserInfo();
     return Responsive(
       mobile: Scaffold(
         drawer: NavDrawer(),
