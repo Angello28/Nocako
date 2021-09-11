@@ -217,28 +217,28 @@ class _MessageListState extends State<MessageList> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-        stream: widget.chatMessagesStream,
-        builder: (context, snapshot){
-          if (snapshot.hasData) {
-            return Container(
-              height: defaultHeight(context)/ 1.28,
-              child: ListView.builder(
-                shrinkWrap: true,
-                controller: widget.scrollController,
-                itemCount: snapshot.data!.docs.length,
-                itemBuilder: (context, index){
-                  return ChatBubble(
-                    message: snapshot.data!.docs[index]['message'],
-                    isItMe: snapshot.data!.docs[index]['sendBy'] == Constants.myName,
-                    dateTime: snapshot.data!.docs[index]['timestamp'],
-                  );
-                },
-              ),
-            );
-          }
-          else
-            return Container(height: defaultHeight(context)/1.4);
+      stream: widget.chatMessagesStream,
+      builder: (context, snapshot){
+        if (snapshot.hasData) {
+          return Container(
+            height: defaultHeight(context)/(Responsive.isDesktop(context)? 1.28 : 1.35),
+            child: ListView.builder(
+              shrinkWrap: true,
+              controller: widget.scrollController,
+              itemCount: snapshot.data!.docs.length,
+              itemBuilder: (context, index){
+                return ChatBubble(
+                  message: snapshot.data!.docs[index]['message'],
+                  isItMe: snapshot.data!.docs[index]['sendBy'] == Constants.myName,
+                  dateTime: snapshot.data!.docs[index]['timestamp'],
+                );
+              },
+            ),
+          );
         }
+        else
+          return Container(height: defaultHeight(context)/1.4);
+      }
     );
   }
 }
