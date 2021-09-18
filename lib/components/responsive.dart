@@ -7,9 +7,6 @@ class Responsive extends StatelessWidget {
 
   const Responsive({required this.mobile, required this.tablet, required this.desktop,});
 
-// This size work fine on my design, maybe you need some customization depends on your design
-
-  // This isMobile, isTablet, isDesktop helep us later
   static bool isMobile(BuildContext context) =>
       MediaQuery.of(context).size.width < 650;
 

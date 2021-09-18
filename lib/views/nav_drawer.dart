@@ -1,8 +1,10 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:nocako_chatapp/components/const.dart';
 import 'package:nocako_chatapp/components/theme_data.dart';
 import 'package:nocako_chatapp/function/auth.dart';
+import 'package:nocako_chatapp/function/helper.dart';
+import 'package:nocako_chatapp/views/profile_screen.dart';
 import 'package:nocako_chatapp/views/sign_in.dart';
 import 'package:nocako_chatapp/views/theme_setting.dart';
 
@@ -14,17 +16,27 @@ class NavDrawer extends StatefulWidget {
 
 class _NavDrawerState extends State<NavDrawer> {
   Authentication authentication = new Authentication();
-  static String themeName = "";
-  ColorTheme theme = getTheme("Default");
 
   getThemeFromPreferences() async{
-    themeName = (await ThemeGetterAndSetter.getThemeSharedPreferences())!;
-    theme = getTheme(themeName);
-    setState((){});
+    Constants.myThemeName = (await ThemeGetterAndSetter.getThemeSharedPreferences())!;
+    Constants.myTheme = getTheme(Constants.myThemeName);
+    setState(() {});
+  }
+
+
+  getProfileImage() async{
+    Constants.myProfileImage = (await HelperFunction.getUserProfileImageSharedPreference())!;
+    setState(() {});
+  }
+
+  @override
+  void initState() {
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    getProfileImage();
     getThemeFromPreferences();
     return Drawer(
       child: Container(
@@ -34,15 +46,15 @@ class _NavDrawerState extends State<NavDrawer> {
             begin: Alignment.bottomLeft,
             end: Alignment.topRight,
             colors: [
-              theme.secondaryColor,
-              theme.primaryColor,
+              Constants.myTheme.secondaryColor,
+              Constants.myTheme.primaryColor,
             ],
           ),
         ),
         child: Column(
           children: <Widget>[
             Container(
-              margin: EdgeInsets.only(left: defaultHeight(context) / 50, right: defaultHeight(context) / 50),
+              margin: EdgeInsets.symmetric(horizontal: defaultHeight(context)/50),
               height: defaultHeight(context) / 5,
               width: defaultWidth(context),
               child: Column(
@@ -52,16 +64,32 @@ class _NavDrawerState extends State<NavDrawer> {
                   Container(
                     width: defaultHeight(context)/10,
                     height: defaultHeight(context)/10,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: theme.text1Color,
-                      borderRadius: BorderRadius.circular(40)
-                    ),
-                    child: Text("${Constants.myName.substring(0,1).toUpperCase()}",
-                        style: TextStyle(
-                          fontSize: defaultHeight(context)/25,
-                          color: theme.primaryColor
+                    child: CircleAvatar(
+                      maxRadius: 50,
+                      minRadius: 40,
+                      backgroundColor: Colors.transparent,
+                      child: ClipOval(
+                        child: Constants.myProfileImage == "" ?
+                        Icon(
+                          Icons.account_circle,
+                          color: Constants.myTheme.buttonColor == Constants.myTheme.primaryColor ?
+                            Colors.white : Constants.myTheme.buttonColor,
+                          size: defaultHeight(context)/10
+                        )
+                            :
+                        CachedNetworkImage(
+                          imageUrl: Constants.myProfileImage,
+                          placeholder: (context, url) => Icon(
+                            Icons.account_circle,
+                            color: Constants.myTheme.buttonColor == Constants.myTheme.primaryColor ?
+                              Colors.white : Constants.myTheme.buttonColor,
+                            size: defaultHeight(context)/10
+                          ),
+                          fit: BoxFit.cover,
+                          width: defaultHeight(context)/10,
+                          height: defaultHeight(context)/10,
                         ),
+                      )
                     ),
                   ),
                   SizedBox(height: defaultHeight(context)/45),
@@ -69,7 +97,7 @@ class _NavDrawerState extends State<NavDrawer> {
                     children: [
                       SizedBox(width: defaultWidth(context)/100),
                       Text(Constants.myName, style: TextStyle(
-                          color: theme.text1Color,
+                          color: Constants.myTheme.text1Color,
                           fontSize: defaultHeight(context) / 50
                         ),
                       ),
@@ -79,7 +107,7 @@ class _NavDrawerState extends State<NavDrawer> {
                     children: [
                       SizedBox(width: defaultWidth(context)/100),
                       Text(Constants.myEmail, style: TextStyle(
-                          color: theme.text1Color,
+                          color: Constants.myTheme.text1Color,
                           fontSize: defaultHeight(context) / 50
                         ),
                       ),
@@ -91,14 +119,14 @@ class _NavDrawerState extends State<NavDrawer> {
             Divider(
               thickness: 1.5,
               height: defaultHeight(context) / 15,
-              color: theme.text1Color,
+              color: Constants.myTheme.text1Color,
             ),
             ListTile(
-              leading: Icon(Icons.home, color: theme.text1Color, size:defaultHeight(context) / 25),
+              leading: Icon(Icons.home, color: Constants.myTheme.text1Color, size:defaultHeight(context) / 25),
               title: Text(
                 'Home',
                 style: TextStyle(
-                    color: theme.text1Color,
+                    color: Constants.myTheme.text1Color,
                     fontSize: defaultHeight(context) / 45
                 ),
               ),
@@ -110,21 +138,21 @@ class _NavDrawerState extends State<NavDrawer> {
               height: defaultHeight(context) / 100,
             ),
             ListTile(
-              leading: Icon(Icons.account_circle, color: theme.text1Color, size:defaultHeight(context) / 25),
+              leading: Icon(Icons.account_circle, color: Constants.myTheme.text1Color, size:defaultHeight(context) / 25),
               title: Text('Profile', style: TextStyle(
-                  color: theme.text1Color,
+                  color: Constants.myTheme.text1Color,
                   fontSize: defaultHeight(context) / 45
                 ),
               ),
-              onTap: () => {},
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Profile())),
             ),
             SizedBox(
               height: defaultHeight(context) / 100,
             ),
             ListTile(
-              leading: Icon(Icons.brush, color: theme.text1Color, size:defaultHeight(context) / 25),
+              leading: Icon(Icons.brush, color: Constants.myTheme.text1Color, size:defaultHeight(context) / 25),
               title: Text('Theme', style: TextStyle(
-                  color: theme.text1Color,
+                  color: Constants.myTheme.text1Color,
                   fontSize: defaultHeight(context) / 45
                 ),
               ),
@@ -136,9 +164,9 @@ class _NavDrawerState extends State<NavDrawer> {
               height: defaultHeight(context) / 100,
             ),
             ListTile(
-              leading: Icon(Icons.exit_to_app, color: theme.text1Color, size:defaultHeight(context) / 25),
+              leading: Icon(Icons.exit_to_app, color: Constants.myTheme.text1Color, size:defaultHeight(context) / 25),
               title: Text('Sign Out', style: TextStyle(
-                  color: theme.text1Color,
+                  color: Constants.myTheme.text1Color,
                   fontSize: defaultHeight(context) / 45
                 ),
               ),
@@ -146,18 +174,6 @@ class _NavDrawerState extends State<NavDrawer> {
                 authentication.signOut();
                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SignIn()));
               }
-            ),
-            SizedBox(
-              height: defaultHeight(context)/4,
-            ),
-            ListTile(
-              leading: Icon(Icons.close, color: theme.text1Color, size:defaultHeight(context) / 25),
-              title: Text('Exit', style: TextStyle(
-                  color: theme.text1Color,
-                  fontSize: defaultHeight(context) / 45
-                ),
-              ),
-              onTap: () => {SystemNavigator.pop()},
             ),
           ],
         ),

@@ -24,11 +24,17 @@ dependencies:
   flutter:
     sdk: flutter
   firebase_auth:
+  firebase_storage:
   cloud_firestore:
   firebase_core:
+  firebase_app_check:
   shared_preferences:
   intl:
+  cached_network_image:
   flutter_spinkit:
+  flutter_svg:
+  image_picker:
+  modal_bottom_sheet:
   cupertino_icons: ^1.0.2
 
 dev_dependencies:

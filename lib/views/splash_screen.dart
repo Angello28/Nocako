@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:nocako_chatapp/components/theme_data.dart';
 import 'package:nocako_chatapp/function/helper.dart';
 import 'package:nocako_chatapp/components/const.dart';
@@ -72,10 +73,9 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image(
-              image: AssetImage('assets/logo.png'),
-              height: defaultHeight(context)/3,
+            SvgPicture.asset('assets/logo.svg',
               width: defaultHeight(context)/3,
+              height: defaultHeight(context)/3,
             ),
             SizedBox(height: defaultHeight(context)/10),
             Text('Nocako',

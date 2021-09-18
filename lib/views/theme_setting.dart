@@ -12,13 +12,10 @@ class ThemeSetting extends StatefulWidget {
 class _ThemeSettingState extends State<ThemeSetting> {
   List<String> themeList = ["Default", "Dark", "Lofi"];
 
-  static String themeName = "";
-  ColorTheme theme = getTheme("Default");
-
   getThemeFromPreferences() async{
-    themeName = (await ThemeGetterAndSetter.getThemeSharedPreferences())!;
-    theme = getTheme(themeName);
-    setState((){});
+    Constants.myThemeName = (await ThemeGetterAndSetter.getThemeSharedPreferences())!;
+    Constants.myTheme = getTheme(Constants.myThemeName);
+    setState(() {});
   }
 
   @override
@@ -27,38 +24,42 @@ class _ThemeSettingState extends State<ThemeSetting> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Theme', style: TextStyle(
-          color: theme.text1Color
+          color: Constants.myTheme.text1Color
         )),
-        backgroundColor: theme.primaryColor,
-        iconTheme: IconThemeData(color: theme.text1Color),
+        backgroundColor: Constants.myTheme.primaryColor,
+        iconTheme: IconThemeData(color: Constants.myTheme.text1Color),
       ),
       body: Container(
         height: defaultHeight(context),
         width: defaultWidth(context),
-        color: theme.backgroundColor,
+        color: Constants.myTheme.backgroundColor,
         child: ListView.builder(
           itemCount: themeList.length,
           shrinkWrap: true,
           itemBuilder: (context, index){
             return ListTile(
-              onTap: (){
+              onTap: () async{
                 setState((){
                   ThemeGetterAndSetter.setThemeSharedPreferences(themeList[index]);
                 });
+                Constants.myThemeName = (await ThemeGetterAndSetter.getThemeSharedPreferences())!;
+                Constants.myTheme = getTheme(Constants.myThemeName);
               },
               trailing: Radio(
                 value: themeList[index],
-                groupValue: themeName == "" ? 'Default' : themeName,
-                onChanged: (val) {
+                groupValue: Constants.myThemeName == "" ? 'Default' : Constants.myThemeName,
+                onChanged: (val) async{
                   setState((){
                     ThemeGetterAndSetter.setThemeSharedPreferences(themeList[index]);
                   });
+                  Constants.myThemeName = (await ThemeGetterAndSetter.getThemeSharedPreferences())!;
+                  Constants.myTheme = getTheme(Constants.myThemeName);
                 },
-                activeColor: theme.buttonColor,
+                activeColor: Constants.myTheme.buttonColor,
               ),
               title: Text(themeList[index],
                 style: TextStyle(
-                  color: theme.text2Color
+                  color: Constants.myTheme.text2Color
                 ),
               ),
             );

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:nocako_chatapp/components/components.dart';
 import 'package:nocako_chatapp/components/theme_data.dart';
 import 'package:nocako_chatapp/components/const.dart';
@@ -28,13 +29,10 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
   TextEditingController emailTextController = new TextEditingController();
   TextEditingController passwordTextController = new TextEditingController();
 
-  static String themeName = "";
-  ColorTheme theme = getTheme("Default");
-
   getThemeFromPreferences() async{
-    themeName = (await ThemeGetterAndSetter.getThemeSharedPreferences())!;
-    theme = getTheme(themeName);
-    setState((){});
+    Constants.myThemeName = (await ThemeGetterAndSetter.getThemeSharedPreferences())!;
+    Constants.myTheme = getTheme(Constants.myThemeName);
+    setState(() {});
   }
 
   signInValidator() async{
@@ -45,9 +43,11 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
       await authentication.signInWithEmailAndPassword(emailTextController.text, passwordTextController.text).then((value) async{
         if(value!=null){
           QuerySnapshot userInfo = await userMethod.getUserByUserEmail(emailTextController.text);
+          HelperFunction.saveUserIdSharedPreference(userInfo.docs[0]['id']);
           HelperFunction.saveUserLoggedInSharedPreference(true);
           HelperFunction.saveUserNameSharedPreference(userInfo.docs[0]['name']);
           HelperFunction.saveUserEmailSharedPreference(emailTextController.text);
+          HelperFunction.saveUserProfileImageSharedPreference(userInfo.docs[0]['profileImg']);
           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MainScreen()));
         }
         else{
@@ -86,7 +86,7 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
         mobile: Container(
           width: defaultWidth(context),
           height: defaultHeight(context),
-          color: theme.backgroundColor,
+          color: Constants.myTheme.backgroundColor,
           child: SingleChildScrollView(
             child: Container(
               width: defaultWidth(context),
@@ -100,7 +100,7 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                     width: defaultWidth(context),
                     decoration: BoxDecoration(
                       image: DecorationImage(
-                          image: AssetImage(theme.signWallpaper),
+                          image: AssetImage(Constants.myTheme.signWallpaper),
                           fit: BoxFit.cover
                       ),
                     ),
@@ -109,11 +109,11 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('Welcome back,', style: TextStyle(
-                            color: theme.text1Color,
+                            color: Constants.myTheme.text1Color,
                             fontSize: defaultHeight(context)/25
                         )),
                         Text('Sign In', style: TextStyle(
-                            color: theme.text1Color,
+                            color: Constants.myTheme.text1Color,
                             fontSize: defaultHeight(context)/13
                         )),
                       ],
@@ -129,7 +129,7 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                             children: [
                               TextFormField(
                                 style: TextStyle(
-                                    color: theme.text2Color
+                                  color: Constants.myTheme.text2Color
                                 ),
                                 validator: (val){
                                   return RegExp(regexSource).hasMatch(val!) ? null : "Invalid email";
@@ -137,30 +137,30 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                                 controller: emailTextController,
                                 decoration: InputDecoration(
                                     enabledBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(color: theme.borderColor)
+                                        borderSide: BorderSide(color: Constants.myTheme.borderColor)
                                     ),
                                     focusedBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(color: theme.buttonColor)
+                                        borderSide: BorderSide(color: Constants.myTheme.buttonColor)
                                     ),
-                                    hintText: 'Email', hintStyle: TextStyle(color: theme.text2Color)
+                                    hintText: 'Email', hintStyle: TextStyle(color: Constants.myTheme.text2Color)
                                 ),
                               ),
                               TextFormField(
                                 style: TextStyle(
-                                    color: theme.text2Color
+                                  color: Constants.myTheme.text2Color
                                 ),
                                 validator: (val){
                                   return val!.isEmpty || val.length<6 ? "Password too short (min 6 character)" : null;
                                 },
                                 controller: passwordTextController,
                                 decoration: InputDecoration(
-                                    enabledBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(color: theme.borderColor)
-                                    ),
-                                    focusedBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(color: theme.buttonColor)
-                                    ),
-                                    hintText: 'Password', hintStyle: TextStyle(color: theme.text2Color)
+                                  enabledBorder: UnderlineInputBorder(
+                                      borderSide: BorderSide(color: Constants.myTheme.borderColor)
+                                  ),
+                                  focusedBorder: UnderlineInputBorder(
+                                      borderSide: BorderSide(color: Constants.myTheme.buttonColor)
+                                  ),
+                                  hintText: 'Password', hintStyle: TextStyle(color: Constants.myTheme.text2Color)
                                 ),
                                 obscureText: true,
                               ),
@@ -173,7 +173,9 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                           children: [
                             InkWell(
                               onTap: (){},
-                              child: Text('Forgot Password?', textAlign: TextAlign.end, style: TextStyle(color: theme.text2Color)),
+                              child: Text('Forgot Password?', textAlign: TextAlign.end, style: TextStyle(
+                                color: Constants.myTheme.text2Color)
+                              ),
                             ),
                           ],
                         ),
@@ -181,30 +183,30 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                         ElevatedButton(
                             onPressed: () => signInValidator(),
                             style: ElevatedButton.styleFrom(
-                              primary: theme.buttonColor,
+                              primary: Constants.myTheme.buttonColor,
                               textStyle: TextStyle(fontSize: defaultHeight(context)/40),
                               shape: new RoundedRectangleBorder(
                                 borderRadius: new BorderRadius.circular(30.0),),
                               minimumSize: Size(defaultWidth(context)/1.5, defaultHeight(context)/20),
                             ),
-                            child: Text('Sign In', style: TextStyle(color: theme.text1Color))
+                            child: Text('Sign In', style: TextStyle(color: Constants.myTheme.text1Color))
                         ),
                         SizedBox(height: defaultHeight(context)/30),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text('Don\'t have account?', style: TextStyle(color: theme.text2Color)),
+                            Text('Don\'t have account?', style: TextStyle(color: Constants.myTheme.text2Color)),
                             InkWell(
-                                onTap: (){
-                                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SignUp()));
-                                },
-                                child: Text(' Register Now',
-                                  textAlign: TextAlign.end,
-                                  style: TextStyle(
-                                      decoration: TextDecoration.underline,
-                                      color: theme.buttonColor
-                                  ),
-                                )
+                              onTap: (){
+                                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SignUp()));
+                              },
+                              child: Text(' Register Now',
+                                textAlign: TextAlign.end,
+                                style: TextStyle(
+                                  decoration: TextDecoration.underline,
+                                  color: Constants.myTheme.buttonColor
+                                ),
+                              )
                             ),
                           ],
                         ),
@@ -220,7 +222,7 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
         tablet: Container(
           width: defaultWidth(context),
           height: defaultHeight(context),
-          color: theme.backgroundColor,
+          color: Constants.myTheme.backgroundColor,
           child: SingleChildScrollView(
             child: Container(
               width: defaultWidth(context),
@@ -234,8 +236,8 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                     width: defaultWidth(context),
                     decoration: BoxDecoration(
                       image: DecorationImage(
-                          image: AssetImage(theme.signWallpaper),
-                          fit: BoxFit.cover
+                        image: AssetImage(Constants.myTheme.signWallpaper),
+                        fit: BoxFit.cover
                       ),
                     ),
                     child: Column(
@@ -243,12 +245,12 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('Welcome back,', style: TextStyle(
-                            color: theme.text1Color,
-                            fontSize: defaultHeight(context)/25
+                          color: Constants.myTheme.text1Color,
+                          fontSize: defaultHeight(context)/25
                         )),
                         Text('Sign In', style: TextStyle(
-                            color: theme.text1Color,
-                            fontSize: defaultHeight(context)/13
+                          color: Constants.myTheme.text1Color,
+                          fontSize: defaultHeight(context)/13
                         )),
                       ],
                     ),
@@ -263,38 +265,38 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                             children: [
                               TextFormField(
                                 style: TextStyle(
-                                    color: theme.text2Color
+                                  color: Constants.myTheme.text2Color
                                 ),
                                 validator: (val){
                                   return RegExp(regexSource).hasMatch(val!) ? null : "Invalid email";
                                 },
                                 controller: emailTextController,
                                 decoration: InputDecoration(
-                                    enabledBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(color: theme.borderColor)
-                                    ),
-                                    focusedBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(color: theme.buttonColor)
-                                    ),
-                                    hintText: 'Email', hintStyle: TextStyle(color: theme.text2Color)
+                                  enabledBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: Constants.myTheme.borderColor)
+                                  ),
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: Constants.myTheme.buttonColor)
+                                  ),
+                                  hintText: 'Email', hintStyle: TextStyle(color: Constants.myTheme.text2Color)
                                 ),
                               ),
                               TextFormField(
                                 style: TextStyle(
-                                    color: theme.text2Color
+                                    color: Constants.myTheme.text2Color
                                 ),
                                 validator: (val){
                                   return val!.isEmpty || val.length<6 ? "Password too short (min 6 character)" : null;
                                 },
                                 controller: passwordTextController,
                                 decoration: InputDecoration(
-                                    enabledBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(color: theme.borderColor)
-                                    ),
-                                    focusedBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(color: theme.buttonColor)
-                                    ),
-                                    hintText: 'Password', hintStyle: TextStyle(color: theme.text2Color)
+                                  enabledBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: Constants.myTheme.borderColor)
+                                  ),
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: Constants.myTheme.buttonColor)
+                                  ),
+                                  hintText: 'Password', hintStyle: TextStyle(color: Constants.myTheme.text2Color)
                                 ),
                                 obscureText: true,
                               ),
@@ -307,7 +309,9 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                           children: [
                             InkWell(
                               onTap: (){},
-                              child: Text('Forgot Password?', textAlign: TextAlign.end, style: TextStyle(color: theme.text2Color)),
+                              child: Text('Forgot Password?', textAlign: TextAlign.end, style: TextStyle(
+                                color: Constants.myTheme.text2Color)
+                              ),
                             ),
                           ],
                         ),
@@ -315,30 +319,30 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                         ElevatedButton(
                             onPressed: () => signInValidator(),
                             style: ElevatedButton.styleFrom(
-                              primary: theme.buttonColor,
+                              primary: Constants.myTheme.buttonColor,
                               textStyle: TextStyle(fontSize: defaultHeight(context)/40),
                               shape: new RoundedRectangleBorder(
                                 borderRadius: new BorderRadius.circular(30.0),),
                               minimumSize: Size(defaultWidth(context)/1.5, defaultHeight(context)/20),
                             ),
-                            child: Text('Sign In', style: TextStyle(color: theme.text1Color))
+                            child: Text('Sign In', style: TextStyle(color: Constants.myTheme.text1Color))
                         ),
                         SizedBox(height: defaultHeight(context)/30),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text('Don\'t have account?', style: TextStyle(color: theme.text2Color)),
+                            Text('Don\'t have account?', style: TextStyle(color: Constants.myTheme.text2Color)),
                             InkWell(
-                                onTap: (){
-                                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SignUp()));
-                                },
-                                child: Text(' Register Now',
-                                  textAlign: TextAlign.end,
-                                  style: TextStyle(
-                                      decoration: TextDecoration.underline,
-                                      color: theme.buttonColor
-                                  ),
-                                )
+                              onTap: (){
+                                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SignUp()));
+                              },
+                              child: Text(' Register Now',
+                                textAlign: TextAlign.end,
+                                style: TextStyle(
+                                  decoration: TextDecoration.underline,
+                                  color: Constants.myTheme.buttonColor
+                                ),
+                              )
                             ),
                           ],
                         ),
@@ -354,7 +358,7 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
         desktop: Container(
           width: defaultWidth(context),
           height: defaultHeight(context),
-          color: theme.backgroundColor,
+          color: Constants.myTheme.backgroundColor,
           child: Row(
             children: [
               Container(
@@ -363,7 +367,7 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                 width: defaultWidth(context)/2,
                 decoration: BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage(theme.signWebWallpaper),
+                    image: AssetImage(Constants.myTheme.signWebWallpaper),
                     fit: BoxFit.cover
                   ),
                 ),
@@ -371,18 +375,17 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Image(
-                      image: AssetImage('assets/logo.png'),
+                    SvgPicture.asset('assets/logo.svg',
                       width: defaultHeight(context)/3,
                       height: defaultHeight(context)/3,
                     ),
                     SizedBox(height: defaultHeight(context)/20),
                     Text('Nocako', style: TextStyle(
-                      color: theme.text1Color,
+                      color: Constants.myTheme.text1Color,
                       fontSize: defaultHeight(context)/15
                     )),
                     Text('Chat App', style: TextStyle(
-                      color: theme.text1Color,
+                      color: Constants.myTheme.text1Color,
                       fontSize: defaultHeight(context)/20
                     )),
                   ],
@@ -396,11 +399,11 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text('Welcome back,', style: TextStyle(
-                          color: theme.text2Color,
+                          color: Constants.myTheme.text2Color,
                           fontSize: defaultHeight(context)/15
                         )),
                         Text('Sign In', style: TextStyle(
-                          color: theme.text2Color,
+                          color: Constants.myTheme.text2Color,
                           fontSize: defaultHeight(context)/10
                         )),
                         SizedBox(height: defaultHeight(context)/3.5),
@@ -410,38 +413,38 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                             children: [
                               TextFormField(
                                 style: TextStyle(
-                                    color: theme.text2Color
+                                  color: Constants.myTheme.text2Color
                                 ),
                                 validator: (val){
                                   return RegExp(regexSource).hasMatch(val!) ? null : "Invalid email";
                                 },
                                 controller: emailTextController,
                                 decoration: InputDecoration(
-                                    enabledBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(color: theme.borderColor)
-                                    ),
-                                    focusedBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(color: theme.buttonColor)
-                                    ),
-                                    hintText: 'Email', hintStyle: TextStyle(color: theme.text2Color)
+                                  enabledBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: Constants.myTheme.borderColor)
+                                  ),
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: Constants.myTheme.buttonColor)
+                                  ),
+                                  hintText: 'Email', hintStyle: TextStyle(color: Constants.myTheme.text2Color)
                                 ),
                               ),
                               TextFormField(
                                 style: TextStyle(
-                                    color: theme.text2Color
+                                  color: Constants.myTheme.text2Color
                                 ),
                                 validator: (val){
                                   return val!.isEmpty || val.length<6 ? "Password too short (min 6 character)" : null;
                                 },
                                 controller: passwordTextController,
                                 decoration: InputDecoration(
-                                    enabledBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(color: theme.borderColor)
-                                    ),
-                                    focusedBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(color: theme.buttonColor)
-                                    ),
-                                    hintText: 'Password', hintStyle: TextStyle(color: theme.text2Color)
+                                  enabledBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: Constants.myTheme.borderColor)
+                                  ),
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: Constants.myTheme.buttonColor)
+                                  ),
+                                  hintText: 'Password', hintStyle: TextStyle(color: Constants.myTheme.text2Color)
                                 ),
                                 obscureText: true,
                               ),
@@ -454,7 +457,9 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                           children: [
                             InkWell(
                               onTap: (){},
-                              child: Text('Forgot Password?', textAlign: TextAlign.end, style: TextStyle(color: theme.text2Color)),
+                              child: Text('Forgot Password?', textAlign: TextAlign.end, style: TextStyle(
+                                color: Constants.myTheme.text2Color)
+                              ),
                             ),
                           ],
                         ),
@@ -462,30 +467,30 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                         ElevatedButton(
                             onPressed: () => signInValidator(),
                             style: ElevatedButton.styleFrom(
-                              primary: theme.buttonColor,
+                              primary: Constants.myTheme.buttonColor,
                               textStyle: TextStyle(fontSize: defaultHeight(context)/40),
                               shape: new RoundedRectangleBorder(
                                 borderRadius: new BorderRadius.circular(30.0),),
                               fixedSize: Size(defaultWidth(context)/5, defaultHeight(context)/20),
                             ),
-                            child: Text('Sign In', style: TextStyle(color: theme.text1Color))
+                            child: Text('Sign In', style: TextStyle(color: Constants.myTheme.text1Color))
                         ),
                         SizedBox(height: defaultHeight(context)/30),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text('Don\'t have account?', style: TextStyle(color: theme.text2Color)),
+                            Text('Don\'t have account?', style: TextStyle(color: Constants.myTheme.text2Color)),
                             InkWell(
-                                onTap: (){
-                                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SignUp()));
-                                },
-                                child: Text(' Register Now',
-                                  textAlign: TextAlign.end,
-                                  style: TextStyle(
-                                      decoration: TextDecoration.underline,
-                                      color: theme.buttonColor
-                                  ),
-                                )
+                              onTap: (){
+                                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SignUp()));
+                              },
+                              child: Text(' Register Now',
+                                textAlign: TextAlign.end,
+                                style: TextStyle(
+                                  decoration: TextDecoration.underline,
+                                  color: Constants.myTheme.buttonColor
+                                ),
+                              )
                             ),
                           ],
                         ),

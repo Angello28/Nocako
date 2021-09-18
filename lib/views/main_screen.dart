@@ -9,7 +9,7 @@ import 'package:nocako_chatapp/function/helper.dart';
 import 'package:nocako_chatapp/function/method.dart';
 import 'package:nocako_chatapp/views/chat_screen.dart';
 import 'package:nocako_chatapp/views/nav_drawer.dart';
-import 'package:nocako_chatapp/views/search_page.dart';
+import 'package:nocako_chatapp/views/search_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
@@ -27,35 +27,37 @@ class _MainScreenState extends State<MainScreen> {
   UserMethod userMethod = new UserMethod();
   Stream<QuerySnapshot> chatRoomStream = Stream.empty();
 
-  static String themeName = "";
-  ColorTheme theme = getTheme("Default");
-
-  getThemeFromPreferences() async{
-    themeName = (await ThemeGetterAndSetter.getThemeSharedPreferences())!;
-    theme = getTheme(themeName);
-    setState((){});
-  }
-
   getUserInfo() async{
+    Constants.myId = (await HelperFunction.getUserIdSharedPreference())!;
     Constants.myName = (await HelperFunction.getUserNameSharedPreference())!;
     Constants.myEmail = (await HelperFunction.getUserEmailSharedPreference())!;
-    setState(() {
-      chatRoomStream = userMethod.getChatRooms(Constants.myName);
-    });
+    Constants.myProfileImage = (await HelperFunction.getUserProfileImageSharedPreference())!;
+    chatRoomStream = await userMethod.getChatRooms(Constants.myId);
+    setState(() {});
+  }
+
+  getThemeFromPreferences() async{
+    Constants.myThemeName = (await ThemeGetterAndSetter.getThemeSharedPreferences())!;
+    Constants.myTheme = getTheme(Constants.myThemeName);
+    setState(() {});
   }
 
   Widget sideChatScreen(){
     if(getId == ''){
       return Container(
-        color: theme.backgroundColor,
+        color: Constants.myTheme.backgroundColor,
         height: defaultHeight(context),
         child: Center(
-          child:Text('Center', style: TextStyle(color: theme.text1Color))
+          child:Text('Center', style: TextStyle(color: Constants.myTheme.text1Color))
         ),
       );
     }
     else{
-      return ChatScreen(chatRoomId: getId, chatRoomStream: getMessagesStream);
+      return ChatScreen(
+        chatRoomId: getId,
+        chatRoomStream: getMessagesStream,
+        chatProfileImgUrl: "",
+      );
     }
   }
 
@@ -76,31 +78,31 @@ class _MainScreenState extends State<MainScreen> {
         },
         appBar: AppBar(
           title: Text('Nocako', style: TextStyle(
-              color: theme.text1Color
+              color: Constants.myTheme.text1Color
           )),
-          backgroundColor: theme.primaryColor,
-          iconTheme: IconThemeData(color: theme.text1Color),
+          backgroundColor: Constants.myTheme.primaryColor,
+          iconTheme: IconThemeData(color: Constants.myTheme.text1Color),
         ),
         body: Stack(
-            children: [
-              Container(
-                width: defaultWidth(context),
-                height: defaultHeight(context),
-                color: theme.backgroundColor,
-              ),
-              ChatRoomList(
-                chatRoomStream: chatRoomStream,
-                getChatIdFromList: (id){
-                  getId = id;
-                  setState(() {});
-                },
-                getStreamFromList: (stream){
-                  setState(() {
-                    getMessagesStream = stream;
-                  });
-                },
-              )
-            ]
+          children: [
+            Container(
+              width: defaultWidth(context),
+              height: defaultHeight(context),
+              color: Constants.myTheme.backgroundColor,
+            ),
+            ChatRoomList(
+              chatRoomStream: chatRoomStream,
+              getChatIdFromList: (id){
+                getId = id;
+                setState(() {});
+              },
+              getStreamFromList: (stream){
+                setState(() {
+                  getMessagesStream = stream;
+                });
+              },
+            )
+          ]
         ),
         floatingActionButton: Container(
           margin: EdgeInsets.only(right: defaultWidth(context)/30, bottom: defaultHeight(context)/60),
@@ -110,8 +112,8 @@ class _MainScreenState extends State<MainScreen> {
             onPressed: () {
               Navigator.push(context, MaterialPageRoute(builder: (context) => Search()));
             },
-            child: Icon(Icons.chat, size: defaultHeight(context)/25, color: theme.text1Color),
-            backgroundColor: theme.buttonColor,
+            child: Icon(Icons.chat, size: defaultHeight(context)/25, color: Constants.myTheme.text1Color),
+            backgroundColor: Constants.myTheme.buttonColor,
           ),
         ),
       ),
@@ -122,17 +124,17 @@ class _MainScreenState extends State<MainScreen> {
         },
         appBar: AppBar(
           title: Text('Nocako', style: TextStyle(
-              color: theme.text1Color
+            color: Constants.myTheme.text1Color
           )),
-          backgroundColor: theme.primaryColor,
-          iconTheme: IconThemeData(color: theme.text1Color),
+          backgroundColor: Constants.myTheme.primaryColor,
+          iconTheme: IconThemeData(color: Constants.myTheme.text1Color),
         ),
         body: Stack(
             children: [
               Container(
                 width: defaultWidth(context),
                 height: defaultHeight(context),
-                color: theme.backgroundColor,
+                color: Constants.myTheme.backgroundColor,
               ),
               ChatRoomList(
                 chatRoomStream: chatRoomStream,
@@ -156,8 +158,8 @@ class _MainScreenState extends State<MainScreen> {
             onPressed: () {
               Navigator.push(context, MaterialPageRoute(builder: (context) => Search()));
             },
-            child: Icon(Icons.chat, size: defaultHeight(context)/25, color: theme.text1Color),
-            backgroundColor: theme.buttonColor,
+            child: Icon(Icons.chat, size: defaultHeight(context)/25, color: Constants.myTheme.text1Color),
+            backgroundColor: Constants.myTheme.buttonColor,
           ),
         ),
       ),
@@ -172,17 +174,17 @@ class _MainScreenState extends State<MainScreen> {
               },
               appBar: AppBar(
                 title: Text('Nocako', style: TextStyle(
-                    color: theme.text1Color
+                    color: Constants.myTheme.text1Color
                 )),
-                backgroundColor: theme.primaryColor,
-                iconTheme: IconThemeData(color: theme.text1Color),
+                backgroundColor: Constants.myTheme.primaryColor,
+                iconTheme: IconThemeData(color: Constants.myTheme.text1Color),
               ),
               body: Stack(
                 children: [
                   Container(
                     width: defaultWidth(context),
                     height: defaultHeight(context),
-                    color: theme.backgroundColor,
+                    color: Constants.myTheme.backgroundColor,
                   ),
                   ChatRoomList(
                     chatRoomStream: chatRoomStream,
@@ -207,8 +209,8 @@ class _MainScreenState extends State<MainScreen> {
                   onPressed: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => Search()));
                   },
-                  child: Icon(Icons.chat, size: defaultHeight(context)/25, color: theme.text1Color),
-                  backgroundColor: theme.buttonColor,
+                  child: Icon(Icons.chat, size: defaultHeight(context)/25, color: Constants.myTheme.text1Color),
+                  backgroundColor: Constants.myTheme.buttonColor,
                 ),
               ),
               floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
