@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'const.dart';
+
 class ColorTheme{
   Color primaryColor;
   Color secondaryColor;

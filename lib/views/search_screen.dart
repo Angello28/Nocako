@@ -20,13 +20,10 @@ class _SearchState extends State<Search>{
   var queryResultSet = [];
   var tempSearchStore =[];
 
-  static String themeName = "";
-  ColorTheme theme = getTheme("Default");
-
   getThemeFromPreferences() async{
-    themeName = (await ThemeGetterAndSetter.getThemeSharedPreferences())!;
-    theme = getTheme(themeName);
-    setState((){});
+    Constants.myThemeName = (await ThemeGetterAndSetter.getThemeSharedPreferences())!;
+    Constants.myTheme = getTheme(Constants.myThemeName);
+    setState(() {});
   }
 
   // ignore: non_constant_identifier_names
@@ -76,29 +73,29 @@ class _SearchState extends State<Search>{
     getThemeFromPreferences();
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: theme.primaryColor,
-        iconTheme: IconThemeData(color: theme.text1Color),
-        title: Text('Search', style: TextStyle(color: theme.text1Color))
+        backgroundColor: Constants.myTheme.primaryColor,
+        iconTheme: IconThemeData(color: Constants.myTheme.text1Color),
+        title: Text('Search', style: TextStyle(color: Constants.myTheme.text1Color))
       ),
       body: Container(
-        color: theme.backgroundColor,
+        color: Constants.myTheme.backgroundColor,
         padding: EdgeInsets.symmetric(vertical: defaultHeight(context)/50, horizontal: defaultWidth(context)/25),
         child: Column(
           children: [
             Container(
               child: TextField(
-                style: TextStyle(color: theme.text2Color),
+                style: TextStyle(color: Constants.myTheme.text2Color),
                 onChanged: (val){
                   Searching(val);
                 },
                 decoration: InputDecoration(
                   enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: theme.borderColor)
+                    borderSide: BorderSide(color: Constants.myTheme.borderColor)
                   ),
                   focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: theme.buttonColor)
+                    borderSide: BorderSide(color: Constants.myTheme.buttonColor)
                   ),
-                  hintText: 'Search username', hintStyle: TextStyle(color: theme.text2Color)
+                  hintText: 'Search username', hintStyle: TextStyle(color: Constants.myTheme.text2Color)
                 ),
                 enabled: true,
               ),
@@ -114,7 +111,7 @@ class _SearchState extends State<Search>{
                         child: Center(
                           child: Text('Search for chat',
                             style: TextStyle(
-                              color: theme.text2Color
+                              color: Constants.myTheme.text2Color
                             )
                           )
                         )
@@ -127,8 +124,10 @@ class _SearchState extends State<Search>{
                           itemCount: queryResultSet.length,
                           itemBuilder: (context, index){
                             return UserTile(
+                              userId: queryResultSet[index]['id'],
                               username: queryResultSet[index]['name'],
                               email: queryResultSet[index]['email'],
+                              profileImg: queryResultSet[index]['profileImg'],
                               searchMethod: searchMethod
                             );
                           }
@@ -141,8 +140,10 @@ class _SearchState extends State<Search>{
                           itemCount: tempSearchStore.length,
                           itemBuilder: (context, index){
                             return UserTile(
+                              userId: tempSearchStore[index]['id'],
                               username: tempSearchStore[index]['name'],
                               email: tempSearchStore[index]['email'],
+                              profileImg: tempSearchStore[index]['profileImg'],
                               searchMethod: searchMethod
                             );
                           }

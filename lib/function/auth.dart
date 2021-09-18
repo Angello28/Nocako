@@ -1,5 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:nocako_chatapp/components/class.dart';
+
+class AppUser{
+  String userId;
+  AppUser({required this.userId});
+}
 
 class Authentication{
   final FirebaseAuth _auth = FirebaseAuth.instance;
