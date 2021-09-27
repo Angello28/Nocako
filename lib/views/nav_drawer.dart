@@ -4,6 +4,7 @@ import 'package:nocako_chatapp/components/const.dart';
 import 'package:nocako_chatapp/components/theme_data.dart';
 import 'package:nocako_chatapp/function/auth.dart';
 import 'package:nocako_chatapp/function/helper.dart';
+import 'package:nocako_chatapp/function/method.dart';
 import 'package:nocako_chatapp/views/profile_screen.dart';
 import 'package:nocako_chatapp/views/sign_in.dart';
 import 'package:nocako_chatapp/views/theme_setting.dart';
@@ -170,8 +171,9 @@ class _NavDrawerState extends State<NavDrawer> {
                   fontSize: defaultHeight(context) / 45
                 ),
               ),
-              onTap: (){
+              onTap: () async{
                 authentication.signOut();
+                await UserMethod().updateStatus(Constants.myId, 'offline');
                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SignIn()));
               }
             ),

@@ -100,8 +100,8 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                     width: defaultWidth(context),
                     decoration: BoxDecoration(
                       image: DecorationImage(
-                          image: AssetImage(Constants.myTheme.signWallpaper),
-                          fit: BoxFit.cover
+                        image: AssetImage(Constants.myTheme.signWallpaper),
+                        fit: BoxFit.cover
                       ),
                     ),
                     child: Column(
@@ -109,12 +109,12 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('Welcome back,', style: TextStyle(
-                            color: Constants.myTheme.text1Color,
-                            fontSize: defaultHeight(context)/25
+                          color: Constants.myTheme.text1Color,
+                          fontSize: defaultHeight(context)/25
                         )),
                         Text('Sign In', style: TextStyle(
-                            color: Constants.myTheme.text1Color,
-                            fontSize: defaultHeight(context)/13
+                          color: Constants.myTheme.text1Color,
+                          fontSize: defaultHeight(context)/13
                         )),
                       ],
                     ),
@@ -136,13 +136,13 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                                 },
                                 controller: emailTextController,
                                 decoration: InputDecoration(
-                                    enabledBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(color: Constants.myTheme.borderColor)
-                                    ),
-                                    focusedBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(color: Constants.myTheme.buttonColor)
-                                    ),
-                                    hintText: 'Email', hintStyle: TextStyle(color: Constants.myTheme.text2Color)
+                                  enabledBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: Constants.myTheme.borderColor)
+                                  ),
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: Constants.myTheme.buttonColor)
+                                  ),
+                                  hintText: 'Email', hintStyle: TextStyle(color: Constants.myTheme.text2Color)
                                 ),
                               ),
                               TextFormField(

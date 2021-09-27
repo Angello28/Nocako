@@ -14,7 +14,7 @@ class UserMethod{
     .where('searchkey',
       isEqualTo : username.substring(0, 1)
     )
-        .get();
+      .get();
   }
 
   getUserByUserEmail(String email){
@@ -28,43 +28,26 @@ class UserMethod{
     });
   }
 
-  uploadUserInfo(userMap){
-    FirebaseFirestore.instance.collection('users').add(userMap);
-  }
-
-  createChatRoom(String chatRoomId, chatRoomMap){
-    FirebaseFirestore.instance.collection('chatroom')
-      .doc(chatRoomId).set(chatRoomMap).catchError((e){
-        print(e.toString());
-    });
-  }
-
   getChatMessages(String chatRoomId){
     return FirebaseFirestore.instance.collection('chatroom')
-      .doc(chatRoomId).collection('chats').orderBy('timestamp', descending: true).snapshots();
+        .doc(chatRoomId).collection('chats').orderBy('timestamp', descending: true).snapshots();
   }
 
   getRecentChatMessages(String chatRoomId){
     return FirebaseFirestore.instance.collection('chatroom')
-      .doc(chatRoomId).collection('chats').limit(1).orderBy('timestamp', descending: true).snapshots();
+        .doc(chatRoomId).collection('chats').limit(1).orderBy('timestamp', descending: true).snapshots();
   }
 
-  addChatMessages(String chatRoomId, messageMap){
-    FirebaseFirestore.instance.collection('chatroom')
-        .doc(chatRoomId).collection('chats').add(messageMap).catchError((e){
-      print(e.toString());
-    });
-  }
-
-  deleteChatMessages(String chatRoomId){
-    FirebaseFirestore.instance.collection('chatroom').doc(chatRoomId).delete().catchError((e){
-      print(e);
-    });
+  getEmptyChatRoom(String chatRoomId){
+    return FirebaseFirestore.instance.collection('chatroom')
+      .doc(chatRoomId).collection('chats').limit(1).orderBy('timestamp', descending: true).get();
   }
 
   getChatRooms(String id){
     return FirebaseFirestore.instance.collection('chatroom')
-      .where('users', arrayContains: id).snapshots();
+      .where('users', arrayContains: id)
+      .orderBy('recentTimeStamp', descending: true)
+      .snapshots();
   }
 
   getUsernameById(String id) async{
@@ -76,12 +59,6 @@ class UserMethod{
     return name;
   }
 
-  updateProfileImage(String id, String profileImgUrl){
-    FirebaseFirestore.instance.collection('users').where('id', isEqualTo: id).get().then((value) {
-      return FirebaseFirestore.instance.collection('users').doc(value.docs[0].id).update({'profileImg': profileImgUrl});
-    });
-  }
-
   getProfileImageById(String id) async{
     String imgUrl = "";
     final QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('users').where('id', isEqualTo: id).get();
@@ -90,6 +67,94 @@ class UserMethod{
     else
       imgUrl = "";
     return imgUrl;
+  }
+
+  getStatusById(String id) async{
+    String status = "";
+    await FirebaseFirestore.instance.collection('users')
+        .where('id', isEqualTo: id).get().then((value){
+      status = value.docs[0]['status'];
+    });
+    return status;
+  }
+
+  uploadUserInfo(userMap){
+    FirebaseFirestore.instance.collection('users').add(userMap);
+  }
+  
+  getUnreadMessage(String id, String chatRoomId) async{
+    int count = 0;
+    await FirebaseFirestore.instance.collection('chatroom').doc(chatRoomId).collection('chats')
+      .where('sendBy', isEqualTo: id)
+      .where('isRead', isEqualTo: false).get().then((value){
+        count = value.size;
+    });
+    return count;
+  }
+
+  createChatRoom(String chatRoomId, chatRoomMap){
+    FirebaseFirestore.instance.collection('chatroom')
+      .doc(chatRoomId).get().then((value){
+        if(!value.exists){
+          FirebaseFirestore.instance.collection('chatroom')
+            .doc(chatRoomId).set(chatRoomMap).catchError((e){
+              print(e.toString());
+          });
+        }
+        else{
+          FirebaseFirestore.instance.collection('chatroom')
+              .doc(chatRoomId).update(chatRoomMap).catchError((e){
+            print(e.toString());
+          });
+        }
+    });
+  }
+
+  addChatMessages(String chatRoomId, messageMap){
+    FirebaseFirestore.instance.collection('chatroom')
+        .doc(chatRoomId).collection('chats').add(messageMap).catchError((e){
+      print(e.toString());
+    });
+    FirebaseFirestore.instance.collection('chatroom')
+        .doc(chatRoomId).update({'recentTimeStamp': messageMap['timestamp']});
+  }
+
+  deleteChatMessages(String chatRoomId){
+    FirebaseFirestore.instance.collection('chatroom').doc(chatRoomId).collection('chats').get().then((value) {
+      for(DocumentSnapshot ds in value.docs){
+        ds.reference.delete();
+      }
+    });
+    FirebaseFirestore.instance.collection('chatroom').doc(chatRoomId).delete();
+  }
+
+  updateProfileImage(String id, String profileImgUrl){
+    FirebaseFirestore.instance.collection('users').where('id', isEqualTo: id).get().then((value) {
+      FirebaseFirestore.instance.collection('users').doc(value.docs[0].id).update({'profileImg': profileImgUrl});
+    });
+  }
+
+  updateUserName(String id, String newUserName){
+    FirebaseFirestore.instance.collection('users').where('id', isEqualTo: id).get().then((value) {
+      FirebaseFirestore.instance.collection('users').doc(value.docs[0].id).update({'name': newUserName});
+      FirebaseFirestore.instance.collection('users').doc(value.docs[0].id).update({'searchkey': newUserName.substring(0,1).toLowerCase()});
+    });
+  }
+
+  updateStatus(String id, String status){
+    FirebaseFirestore.instance.collection('users').where('id', isEqualTo: id).get().then((value) {
+      FirebaseFirestore.instance.collection('users').doc(value.docs[0].id).update({'status': status});
+    });
+  }
+
+  updateReadMessage(String id, String chatRoomId){
+    FirebaseFirestore.instance.collection('chatroom').doc(chatRoomId).collection('chats')
+      .where('sendBy', isEqualTo: id).where('isRead', isEqualTo: false).get().then((value){
+        value.docs.forEach((element) {
+          FirebaseFirestore.instance.collection('chatroom').doc(chatRoomId)
+            .collection('chats').doc(element.id).update({'isRead': true});
+        });
+    });
   }
 
   generateID() async{
@@ -188,8 +253,8 @@ class FormattingMethod{
       formatMessage = message;
     }
 
-    if(formatMessage.length > 35){
-      formatMessage = formatMessage.substring(0, 35) + '...';
+    if(formatMessage.length > 30){
+      formatMessage = formatMessage.substring(0, 30) + '...';
     }
 
     if(formatMessage.contains('\n')){
@@ -207,5 +272,14 @@ class FormattingMethod{
       return 'Yesterday';
     else
       return DateFormat('dd/MM/yy').format(timestamp);
+  }
+
+  String separatorDateFormat(DateTime timestamp){
+    if(DateTime(timestamp.year, timestamp.month, timestamp.day).difference(DateTime.now()).inDays == 0)
+      return 'Today';
+    else if(DateTime(timestamp.year, timestamp.month, timestamp.day).difference(DateTime.now()).inDays == -1)
+      return 'Yesterday';
+    else
+      return DateFormat('MMMM dd, yyyy').format(timestamp);
   }
 }

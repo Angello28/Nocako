@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:grouped_list/grouped_list.dart';
 import 'package:nocako_chatapp/components/const.dart';
 import 'package:nocako_chatapp/components/theme_data.dart';
 
@@ -28,6 +30,8 @@ class _ThemeSettingState extends State<ThemeSetting> {
         )),
         backgroundColor: Constants.myTheme.primaryColor,
         iconTheme: IconThemeData(color: Constants.myTheme.text1Color),
+        backwardsCompatibility: false,
+        systemOverlayStyle: SystemUiOverlayStyle(statusBarIconBrightness: Brightness.light),
       ),
       body: Container(
         height: defaultHeight(context),

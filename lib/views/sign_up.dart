@@ -59,13 +59,6 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin{
           HelperFunction.saveUserEmailSharedPreference(emailTextController.text);
           HelperFunction.saveUserProfileImageSharedPreference(userInfoFetch.docs[0]['profileImg']);
           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MainScreen()));
-
-          // HelperFunction.saveUserIdSharedPreference(await UserMethod().generateID());
-          // HelperFunction.saveUserLoggedInSharedPreference(true);
-          // HelperFunction.saveUserNameSharedPreference(usernameTextController.text);
-          // HelperFunction.saveUserEmailSharedPreference(emailTextController.text);
-          // HelperFunction.saveUserProfileImageSharedPreference("");
-          // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MainScreen()));
         }
         else{
           setState(() {
