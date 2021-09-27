@@ -19,5 +19,6 @@ class Constants{
   static String myProfileImage = "";
   static String myThemeName = "";
   static ColorTheme myTheme = getTheme('Default');
+  static bool isInChatRoom = false;
 }
 

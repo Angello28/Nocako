@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:nocako_chatapp/components/components.dart';
 import 'package:nocako_chatapp/components/theme_data.dart';
 import 'package:nocako_chatapp/components/const.dart';
@@ -75,7 +76,9 @@ class _SearchState extends State<Search>{
       appBar: AppBar(
         backgroundColor: Constants.myTheme.primaryColor,
         iconTheme: IconThemeData(color: Constants.myTheme.text1Color),
-        title: Text('Search', style: TextStyle(color: Constants.myTheme.text1Color))
+        title: Text('Search', style: TextStyle(color: Constants.myTheme.text1Color)),
+        backwardsCompatibility: false,
+        systemOverlayStyle: SystemUiOverlayStyle(statusBarIconBrightness: Brightness.light),
       ),
       body: Container(
         color: Constants.myTheme.backgroundColor,

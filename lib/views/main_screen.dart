@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:nocako_chatapp/components/const.dart';
 import 'package:nocako_chatapp/components/responsive.dart';
 import 'package:nocako_chatapp/components/theme_data.dart';
@@ -18,13 +19,12 @@ class MainScreen extends StatefulWidget {
   _MainScreenState createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver{
 
   String getId = '';
   Stream<QuerySnapshot> getMessagesStream = Stream.empty();
 
   Authentication authentication = new Authentication();
-  UserMethod userMethod = new UserMethod();
   Stream<QuerySnapshot> chatRoomStream = Stream.empty();
 
   getUserInfo() async{
@@ -32,7 +32,8 @@ class _MainScreenState extends State<MainScreen> {
     Constants.myName = (await HelperFunction.getUserNameSharedPreference())!;
     Constants.myEmail = (await HelperFunction.getUserEmailSharedPreference())!;
     Constants.myProfileImage = (await HelperFunction.getUserProfileImageSharedPreference())!;
-    chatRoomStream = await userMethod.getChatRooms(Constants.myId);
+    chatRoomStream = await UserMethod().getChatRooms(Constants.myId);
+    await UserMethod().updateStatus(Constants.myId, 'online');
     setState(() {});
   }
 
@@ -64,7 +65,27 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     getUserInfo();
+    WidgetsBinding.instance!.addObserver(this);
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance!.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async{
+    super.didChangeAppLifecycleState(state);
+    if(state == AppLifecycleState.resumed){
+      await UserMethod().updateStatus(Constants.myId, 'online');
+      setState(() {});
+    }
+    else{
+      await UserMethod().updateStatus(Constants.myId, 'offline');
+      setState(() {});
+    }
   }
 
   @override
@@ -78,10 +99,12 @@ class _MainScreenState extends State<MainScreen> {
         },
         appBar: AppBar(
           title: Text('Nocako', style: TextStyle(
-              color: Constants.myTheme.text1Color
+            color: Constants.myTheme.text1Color
           )),
           backgroundColor: Constants.myTheme.primaryColor,
           iconTheme: IconThemeData(color: Constants.myTheme.text1Color),
+          backwardsCompatibility: false,
+          systemOverlayStyle: SystemUiOverlayStyle(statusBarIconBrightness: Brightness.light),
         ),
         body: Stack(
           children: [
@@ -90,6 +113,7 @@ class _MainScreenState extends State<MainScreen> {
               height: defaultHeight(context),
               color: Constants.myTheme.backgroundColor,
             ),
+            chatRoomStream != Stream.empty() ?
             ChatRoomList(
               chatRoomStream: chatRoomStream,
               getChatIdFromList: (id){
@@ -101,6 +125,10 @@ class _MainScreenState extends State<MainScreen> {
                   getMessagesStream = stream;
                 });
               },
+            )
+                :
+            Container(
+              child: Text('kosong'),
             )
           ]
         ),

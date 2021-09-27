@@ -17,13 +17,10 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   bool isLoggedIn = false;
 
-  static String themeName = "";
-  ColorTheme theme = getTheme("Default");
-
   getThemeFromPreferences() async{
-    themeName = (await ThemeGetterAndSetter.getThemeSharedPreferences())!;
-    theme = getTheme(themeName);
-    setState((){});
+    Constants.myThemeName = (await ThemeGetterAndSetter.getThemeSharedPreferences())!;
+    Constants.myTheme = getTheme(Constants.myThemeName);
+    setState(() {});
   }
 
   getLoggedInState() async{
@@ -65,8 +62,8 @@ class _SplashScreenState extends State<SplashScreen> {
             begin: Alignment.topRight,
             end: Alignment.bottomLeft,
             colors: [
-              theme.primaryColor,
-              theme.secondaryColor,
+              Constants.myTheme.primaryColor,
+              Constants.myTheme.secondaryColor,
             ],
           ),
         ),
@@ -80,7 +77,7 @@ class _SplashScreenState extends State<SplashScreen> {
             SizedBox(height: defaultHeight(context)/10),
             Text('Nocako',
               style: TextStyle(
-                color: theme.text1Color,
+                color: Constants.myTheme.text1Color,
                 fontSize: defaultHeight(context)/13
               ),
             ),
@@ -88,7 +85,7 @@ class _SplashScreenState extends State<SplashScreen> {
             Text('Chat App wihout being toxic',
               textAlign: TextAlign.center,
               style: TextStyle(
-                  color: theme.text1Color,
+                  color: Constants.myTheme.text1Color,
                   fontSize: defaultHeight(context)/55
               ),
             ),

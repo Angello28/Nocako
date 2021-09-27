@@ -1,12 +1,14 @@
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:nocako_chatapp/components/const.dart';
 import 'package:nocako_chatapp/components/theme_data.dart';
 import 'package:nocako_chatapp/function/helper.dart';
 import 'package:nocako_chatapp/function/method.dart';
+import 'package:nocako_chatapp/views/photo_screen.dart';
 
 class Profile extends StatefulWidget {
   const Profile({Key? key}) : super(key: key);
@@ -23,16 +25,22 @@ class _ProfileState extends State<Profile> {
     setState(() {});
   }
 
+  bool isLoading = false;
+  TextEditingController usernameTextController = new TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     getThemeFromPreferences();
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text('Profile', style: TextStyle(
           color: Constants.myTheme.text1Color
         )),
         backgroundColor: Constants.myTheme.primaryColor,
         iconTheme: IconThemeData(color: Constants.myTheme.text1Color),
+        backwardsCompatibility: false,
+        systemOverlayStyle: SystemUiOverlayStyle(statusBarIconBrightness: Brightness.light),
       ),
       body: Container(
         height: defaultHeight(context),
@@ -42,33 +50,51 @@ class _ProfileState extends State<Profile> {
         child: Column(
           //mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: defaultHeight(context)/5,
-              height: defaultHeight(context)/5,
-              child: CircleAvatar(
-                maxRadius: 50,
-                minRadius: 40,
-                backgroundColor: Colors.transparent,
-                child: ClipOval(
-                  child: Constants.myProfileImage == "" ?
-                  Icon(
-                    Icons.account_circle,
-                    color: Constants.myTheme.buttonColor,
-                    size: defaultHeight(context)/5
-                  )
-                      :
-                  CachedNetworkImage(
+            InkWell(
+              onTap: () {
+                if(Constants.myProfileImage != "")
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => PhotoScreen(
+                    title: 'Profile Image',
                     imageUrl: Constants.myProfileImage,
-                    placeholder: (context, url) => CircularProgressIndicator(
+                  )));
+              },
+              child: Container(
+                width: defaultHeight(context)/5,
+                height: defaultHeight(context)/5,
+                child: CircleAvatar(
+                  maxRadius: 50,
+                  minRadius: 40,
+                  backgroundColor: Colors.transparent,
+                  child: ClipOval(
+                    child: Constants.myProfileImage == "" ?
+                    Icon(
+                      Icons.account_circle,
+                      color: Constants.myTheme.buttonColor,
+                      size: defaultHeight(context)/5
+                    )
+                        :
+                    isLoading ?
+                    CircularProgressIndicator(
                       backgroundColor: Colors.transparent,
                       color: Constants.myTheme.buttonColor,
+                    )
+                        :
+                    CachedNetworkImage(
+                      imageUrl: Constants.myProfileImage,
+                      progressIndicatorBuilder: (context, url, downloadProgress) =>
+                        CircularProgressIndicator(
+                          backgroundColor: Colors.transparent,
+                          color: Constants.myTheme.buttonColor,
+                          value: downloadProgress.progress,
+                        ),
+                      errorWidget: (context, url, error) => Icon(Icons.error),
+                      fit: BoxFit.cover,
+                      width: defaultHeight(context)/5,
+                      height: defaultHeight(context)/5,
                     ),
-                    fit: BoxFit.cover,
-                    width: defaultHeight(context)/5,
-                    height: defaultHeight(context)/5,
                   ),
-                ),
-              )
+                )
+              ),
             ),
             SizedBox(height: defaultHeight(context)/40),
             InkWell(
@@ -88,6 +114,8 @@ class _ProfileState extends State<Profile> {
                             ),
                           ),
                           onTap: () async{
+                            isLoading = true;
+                            print('Lagi loading');
                             XFile? image = await ImagePicker().pickImage(source: ImageSource.gallery);
                             Navigator.pop(context);
                             String path = await StorageMethod().uploadProfileImage(Constants.myId, image!);
@@ -95,7 +123,9 @@ class _ProfileState extends State<Profile> {
                             await HelperFunction.saveUserProfileImageSharedPreference(path);
                             setState(() {
                               Constants.myProfileImage = path;
+                              isLoading = false;
                             });
+                            print('Dah siap');
                           },
                         ),
                         ListTile(
@@ -147,6 +177,70 @@ class _ProfileState extends State<Profile> {
                   color: Constants.myTheme.text2Color,
                   fontSize: defaultHeight(context)/45
                 )),
+                trailing: InkWell(
+                  onTap: () async{
+                    showDialog(
+                        context: context,
+                        builder: (context){
+                          return AlertDialog(
+                            backgroundColor: Constants.myTheme.backgroundColor,
+                            buttonPadding: EdgeInsets.only(right: defaultWidth(context)/10),
+                            title: Text(
+                              'Enter New Username',
+                              style: TextStyle(
+                                color: Constants.myTheme.text2Color
+                              ),
+                            ),
+                            content: TextField(
+                              controller: usernameTextController,
+                              style: TextStyle(
+                                color: Constants.myTheme.text2Color
+                              ),
+                              decoration: InputDecoration(
+                                enabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(color: Constants.myTheme.borderColor)
+                                ),
+                                focusedBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(color: Constants.myTheme.buttonColor)
+                                ),
+                              ),
+                            ),
+                            actions: [
+                              InkWell(
+                                child: Text(
+                                  'Cancel',
+                                  style: TextStyle(
+                                    color: Constants.myTheme.text2Color
+                                  ),
+                                ),
+                                onTap: () => Navigator.pop(context),
+                              ),
+                              InkWell(
+                                child: Text(
+                                  'Change',
+                                  style: TextStyle(
+                                    color: Constants.myTheme.buttonColor
+                                  ),
+                                ),
+                                onTap: () async{
+                                  UserMethod().updateUserName(Constants.myId, usernameTextController.text);
+                                  HelperFunction.saveUserNameSharedPreference(usernameTextController.text);
+                                  setState(() {
+                                    Constants.myName = usernameTextController.text;
+                                  });
+                                  Navigator.pop(context);
+                                },
+                              ),
+                            ],
+                          );
+                        }
+                    );
+                  },
+                  child: Icon(
+                    Icons.create,
+                    color: Constants.myTheme.buttonColor
+                  )
+                ),
               ),
             ),
             Container(
