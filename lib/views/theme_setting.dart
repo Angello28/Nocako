@@ -12,7 +12,7 @@ class ThemeSetting extends StatefulWidget {
 }
 
 class _ThemeSettingState extends State<ThemeSetting> {
-  List<String> themeList = ["Default", "Dark", "Lofi"];
+  List<String> themeList = ["Default", "Dark", "Lofi", "Neon"];
 
   getThemeFromPreferences() async{
     Constants.myThemeName = (await ThemeGetterAndSetter.getThemeSharedPreferences())!;

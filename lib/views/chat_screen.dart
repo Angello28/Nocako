@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart';
 import 'package:nocako_chatapp/components/const.dart';
 import 'package:nocako_chatapp/components/responsive.dart';
 import 'package:nocako_chatapp/components/theme_data.dart';
@@ -10,12 +12,14 @@ import 'package:nocako_chatapp/components/components.dart';
 import 'package:nocako_chatapp/function/helper.dart';
 import 'package:nocako_chatapp/function/method.dart';
 import 'package:nocako_chatapp/views/photo_screen.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 class ChatScreen extends StatefulWidget {
   final String chatRoomId;
   final Stream<QuerySnapshot> chatRoomStream;
   final String chatProfileImgUrl;
-  ChatScreen({required this.chatRoomId, required this.chatRoomStream, required this.chatProfileImgUrl});
+  final String tokenId;
+  ChatScreen({required this.chatRoomId, required this.chatRoomStream, required this.chatProfileImgUrl, required this.tokenId});
 
   @override
   _ChatScreenState createState() => _ChatScreenState();
@@ -37,7 +41,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   // fungsi untuk mengirim pesan, implemen api disini
   // ignore: non_constant_identifier_names
-  SendMessage(){
+  SendMessage(String status){
     if(messageTextController.text.isNotEmpty && messageTextController.text.trim().length > 0){
       Map<String, dynamic> messageMap = {
         'message': messageTextController.text,
@@ -46,6 +50,8 @@ class _ChatScreenState extends State<ChatScreen> {
         'isRead': false
       };
       userMethod.addChatMessages(widget.chatRoomId, messageMap);
+      if(status == "offline")
+        sendNotification([widget.tokenId], messageTextController.text, Constants.myName);
     }
     messageTextController.text = "";
   }
@@ -60,6 +66,18 @@ class _ChatScreenState extends State<ChatScreen> {
         );
       }
     });
+  }
+
+  sendNotification(List<String> tokenIdList, String contents, String heading) async{
+    var notification = OSCreateNotification(
+      playerIds: tokenIdList,
+      content: contents,
+      heading: heading,
+      androidSmallIcon: "@drawable/logo",
+    );
+
+    var response = await OneSignal.shared.postNotification(notification);
+    print("Sent notification with response: $response");
   }
 
   @override
@@ -215,12 +233,15 @@ class _ChatScreenState extends State<ChatScreen> {
                           color: Constants.myTheme.buttonColor,
                           shape: CircleBorder(),
                         ),
-                        child: IconButton(
-                          onPressed: (){
-                            SendMessage();
-                            AutoScroll(scrollController);
-                          },
-                          icon: Icon(Icons.send, color: Constants.myTheme.text1Color),
+                        child: FutureBuilder(
+                          future: UserMethod().getStatusById(widget.chatRoomId.replaceAll("_", "").replaceAll(Constants.myId, "")),
+                          builder: (context, future3) => IconButton(
+                            onPressed: (){
+                              SendMessage(future3.data.toString());
+                              AutoScroll(scrollController);
+                            },
+                            icon: Icon(Icons.send, color: Constants.myTheme.text1Color),
+                          ),
                         ),
                       )
                     ],

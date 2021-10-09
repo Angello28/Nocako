@@ -1,17 +1,16 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
+import 'package:grouped_list/grouped_list.dart';
+import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:grouped_list/grouped_list.dart';
-import 'package:intl/intl.dart';
-import 'package:badges/badges.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:nocako_chatapp/components/const.dart';
 import 'package:nocako_chatapp/components/responsive.dart';
 import 'package:nocako_chatapp/components/theme_data.dart';
-import 'package:nocako_chatapp/function/helper.dart';
 import 'package:nocako_chatapp/function/method.dart';
 import 'package:nocako_chatapp/views/chat_screen.dart';
 import 'package:nocako_chatapp/views/photo_screen.dart';
@@ -21,11 +20,12 @@ class ChatRoomTile extends StatefulWidget {
   final String username;
   final String chatRoomId;
   final String chatProfileImgUrl;
+  final String tokenId;
   final void Function(String) getChatId;
   final void Function(Stream<QuerySnapshot>) getChatStream;
   ChatRoomTile({
     required this.username, required this.chatRoomId, required this.chatProfileImgUrl,
-    required this.getChatId,required this.getChatStream
+    required this.tokenId, required this.getChatId,required this.getChatStream
   });
 
   @override
@@ -113,7 +113,7 @@ class _ChatRoomTileState extends State<ChatRoomTile> {
                                 ),
                               );
                             },
-                            transitionDuration: Duration(milliseconds: 300),
+                            transitionDuration: Duration(milliseconds: 200),
                             barrierDismissible: true,
                             barrierLabel: '',
                             context: context,
@@ -231,6 +231,7 @@ class _ChatRoomTileState extends State<ChatRoomTile> {
                           chatRoomId: widget.chatRoomId,
                           chatRoomStream: UserMethod().getChatMessages(widget.chatRoomId),
                           chatProfileImgUrl: widget.chatProfileImgUrl,
+                          tokenId: widget.tokenId,
                         )));
                       }
                       else{
@@ -330,12 +331,20 @@ class _ChatRoomListState extends State<ChatRoomList> {
                     snapshot.data!.docs[index]['chatroomid'].toString().replaceAll("_", "").replaceAll(Constants.myId, ""),
                   ),
                   builder: (context, future){
-                    return ChatRoomTile(
-                      username: snapshot.data!.docs[index]['chatroomid'].toString().replaceAll("_", "").replaceAll(Constants.myId, ""),
-                      chatRoomId: snapshot.data!.docs[index]['chatroomid'],
-                      chatProfileImgUrl: future.data.toString(),
-                      getChatId: widget.getChatIdFromList,
-                      getChatStream: widget.getStreamFromList,
+                    return FutureBuilder(
+                      future: UserMethod().getTokenById(
+                        snapshot.data!.docs[index]['chatroomid'].toString().replaceAll("_", "").replaceAll(Constants.myId, ""),
+                      ),
+                      builder: (context, future2){
+                        return ChatRoomTile(
+                          username: snapshot.data!.docs[index]['chatroomid'].toString().replaceAll("_", "").replaceAll(Constants.myId, ""),
+                          chatRoomId: snapshot.data!.docs[index]['chatroomid'],
+                          chatProfileImgUrl: future.data.toString(),
+                          getChatId: widget.getChatIdFromList,
+                          getChatStream: widget.getStreamFromList,
+                          tokenId: future2.data.toString(),
+                        );
+                      },
                     );
                   }
                 );
@@ -419,13 +428,25 @@ class _ChatBubbleState extends State<ChatBubble>{
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   backgroundColor: Colors.black,
-                  content: Text('Message copied to clipboard', textAlign: TextAlign.center),
+                  content: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Text('Message copied to clipboard', textAlign: TextAlign.center),
+                      InkWell(
+                        onTap: ()=> ScaffoldMessenger.of(context).removeCurrentSnackBar(),
+                        child: Icon(
+                          Icons.cancel,
+                          color: Colors.white,
+                        ),
+                      )
+                    ],
+                  ),
                   behavior: SnackBarBehavior.floating,
                   elevation: 0,
                   shape: new RoundedRectangleBorder(
                     borderRadius: new BorderRadius.circular(30.0)
                   ),
-                  width: defaultWidth(context)/1.5,
+                  width: defaultWidth(context)/1.4,
                   animation: CurvedAnimation(
                     parent: AnimationController(duration: const Duration(seconds: 1), vsync: widget.tickerProvider),
                     curve: Curves.linear
@@ -573,10 +594,11 @@ class UserTile extends StatefulWidget {
   final String username;
   final String email;
   final String profileImg;
+  final String tokenId;
   final SearchMethod searchMethod;
   UserTile({
     required this.userId, required this.username, required this.email,
-    required this.profileImg, required this.searchMethod
+    required this.profileImg, required this.tokenId, required this.searchMethod
   });
 
   @override
@@ -647,6 +669,7 @@ class _UserTileState extends State<UserTile> with TickerProviderStateMixin{
           userId: widget.userId,
           profileImg: widget.profileImg,
           context: context,
+          tokenId: widget.tokenId,
           tickerProvider: this
         );
       },

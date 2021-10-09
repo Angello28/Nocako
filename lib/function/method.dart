@@ -69,6 +69,16 @@ class UserMethod{
     return imgUrl;
   }
 
+  getTokenById(String id) async{
+    String token = "";
+    final QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('users').where('id', isEqualTo: id).get();
+    if(snapshot.size != 0)
+      token = snapshot.docs[0]['tokenId'];
+    else
+      token = "";
+    return token;
+  }
+
   getStatusById(String id) async{
     String status = "";
     await FirebaseFirestore.instance.collection('users')
@@ -141,6 +151,12 @@ class UserMethod{
     });
   }
 
+  updateToken(String id, String newToken){
+    FirebaseFirestore.instance.collection('users').where('id', isEqualTo: id).get().then((value) {
+      FirebaseFirestore.instance.collection('users').doc(value.docs[0].id).update({'tokenId': newToken});
+    });
+  }
+
   updateStatus(String id, String status){
     FirebaseFirestore.instance.collection('users').where('id', isEqualTo: id).get().then((value) {
       FirebaseFirestore.instance.collection('users').doc(value.docs[0].id).update({'status': status});
@@ -188,7 +204,7 @@ class StorageMethod{
 
 class SearchMethod{
   // ignore: non_constant_identifier_names
-  StartChatting({required String userId, required String profileImg, required BuildContext context, required TickerProvider tickerProvider}){
+  StartChatting({required String userId, required String tokenId, required String profileImg, required BuildContext context, required TickerProvider tickerProvider}){
     if(userId != Constants.myId){
       List<String> users = [userId, Constants.myId];
       String chatroomid = returnChatId(userId, Constants.myId);
@@ -203,19 +219,32 @@ class SearchMethod{
         chatRoomId: chatroomid,
         chatRoomStream: UserMethod().getChatMessages(chatroomid),
         chatProfileImgUrl: profileImg,
+        tokenId: tokenId,
       )));
     }
     else{
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: Colors.red,
-          content: Text('You can\'t chat yourself', textAlign: TextAlign.center),
+          content: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Text('You can\'t chat yourself', textAlign: TextAlign.center),
+              InkWell(
+                onTap: ()=> ScaffoldMessenger.of(context).removeCurrentSnackBar(),
+                child: Icon(
+                  Icons.cancel,
+                  color: Colors.white,
+                ),
+              )
+            ],
+          ),
           behavior: SnackBarBehavior.floating,
           elevation: 0,
           shape: new RoundedRectangleBorder(
             borderRadius: new BorderRadius.circular(30.0)
           ),
-          width: defaultWidth(context)/2,
+          width: defaultWidth(context)/1.5,
           animation: CurvedAnimation(
             parent: AnimationController(duration: const Duration(seconds: 1), vsync: tickerProvider),
             curve: Curves.linear

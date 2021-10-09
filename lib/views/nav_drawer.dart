@@ -174,6 +174,7 @@ class _NavDrawerState extends State<NavDrawer> {
               onTap: () async{
                 authentication.signOut();
                 await UserMethod().updateStatus(Constants.myId, 'offline');
+                await UserMethod().updateToken(Constants.myId, '');
                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SignIn()));
               }
             ),
