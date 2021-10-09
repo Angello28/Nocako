@@ -11,6 +11,7 @@ import 'package:nocako_chatapp/function/helper.dart';
 import 'package:nocako_chatapp/function/method.dart';
 import 'package:nocako_chatapp/views/main_screen.dart';
 import 'package:nocako_chatapp/views/sign_in.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({Key? key}) : super(key: key);
@@ -44,12 +45,16 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin{
       });
       await authentication.signUpWithEmailAndPassword(emailTextController.text, passwordTextController.text).then((value) async{
         if(value!= null){
+          var status = await OneSignal.shared.getDeviceState();
+          String? tokenId = status!.userId;
+
           Map<String, String> userInfo = {
             "id" : await UserMethod().generateID(),
             "name" : usernameTextController.text,
             "email": emailTextController.text,
             "searchkey": usernameTextController.text.substring(0, 1).toLowerCase(),
-            "profileImg": ""
+            "profileImg": "",
+            "tokenId": tokenId.toString()
           };
           await userMethod.uploadUserInfo(userInfo);
           QuerySnapshot userInfoFetch = await userMethod.getUserByUserEmail(emailTextController.text);
@@ -67,13 +72,25 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin{
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 backgroundColor: Colors.red,
-                content: Text('This email already registered', textAlign: TextAlign.center),
+                content: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Text('This email already registered', textAlign: TextAlign.center),
+                    InkWell(
+                      onTap: ()=> ScaffoldMessenger.of(context).removeCurrentSnackBar(),
+                      child: Icon(
+                        Icons.cancel,
+                        color: Colors.white,
+                      ),
+                    )
+                  ],
+                ),
                 behavior: SnackBarBehavior.floating,
                 elevation: 0,
                 shape: new RoundedRectangleBorder(
                     borderRadius: new BorderRadius.circular(30.0)
                 ),
-                width: defaultWidth(context)/1.5,
+                width: defaultWidth(context)/1.4,
                 animation: CurvedAnimation(
                     parent: AnimationController(duration: const Duration(seconds: 1), vsync: this),
                     curve: Curves.linear

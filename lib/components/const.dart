@@ -20,5 +20,6 @@ class Constants{
   static String myThemeName = "";
   static ColorTheme myTheme = getTheme('Default');
   static bool isInChatRoom = false;
+  static String myOneSignalId = '3b2330e0-1ddf-44d8-8f49-006e17673cb3';
 }
 

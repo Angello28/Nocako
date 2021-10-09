@@ -58,6 +58,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver{
         chatRoomId: getId,
         chatRoomStream: getMessagesStream,
         chatProfileImgUrl: "",
+        tokenId: "",
       );
     }
   }

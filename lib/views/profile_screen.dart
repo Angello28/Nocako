@@ -115,7 +115,6 @@ class _ProfileState extends State<Profile> {
                           ),
                           onTap: () async{
                             isLoading = true;
-                            print('Lagi loading');
                             XFile? image = await ImagePicker().pickImage(source: ImageSource.gallery);
                             Navigator.pop(context);
                             String path = await StorageMethod().uploadProfileImage(Constants.myId, image!);
@@ -125,7 +124,6 @@ class _ProfileState extends State<Profile> {
                               Constants.myProfileImage = path;
                               isLoading = false;
                             });
-                            print('Dah siap');
                           },
                         ),
                         ListTile(

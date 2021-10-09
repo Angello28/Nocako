@@ -131,6 +131,7 @@ class _SearchState extends State<Search>{
                               username: queryResultSet[index]['name'],
                               email: queryResultSet[index]['email'],
                               profileImg: queryResultSet[index]['profileImg'],
+                              tokenId: queryResultSet[index]['tokenId'],
                               searchMethod: searchMethod
                             );
                           }
@@ -147,6 +148,7 @@ class _SearchState extends State<Search>{
                               username: tempSearchStore[index]['name'],
                               email: tempSearchStore[index]['email'],
                               profileImg: tempSearchStore[index]['profileImg'],
+                              tokenId: tempSearchStore[index]['tokenId'],
                               searchMethod: searchMethod
                             );
                           }

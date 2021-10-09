@@ -9,6 +9,7 @@ import 'package:nocako_chatapp/function/auth.dart';
 import 'package:nocako_chatapp/function/helper.dart';
 import 'package:nocako_chatapp/function/method.dart';
 import 'package:nocako_chatapp/views/sign_up.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'main_screen.dart';
 
 class SignIn extends StatefulWidget {
@@ -42,7 +43,11 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
       });
       await authentication.signInWithEmailAndPassword(emailTextController.text, passwordTextController.text).then((value) async{
         if(value!=null){
+          var status = await OneSignal.shared.getDeviceState();
+          String? tokenId = status!.userId;
+
           QuerySnapshot userInfo = await userMethod.getUserByUserEmail(emailTextController.text);
+          await userMethod.updateToken(userInfo.docs[0]['id'], tokenId!);
           HelperFunction.saveUserIdSharedPreference(userInfo.docs[0]['id']);
           HelperFunction.saveUserLoggedInSharedPreference(true);
           HelperFunction.saveUserNameSharedPreference(userInfo.docs[0]['name']);
@@ -56,7 +61,19 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 backgroundColor: Colors.red,
-                content: Text('User not found', textAlign: TextAlign.center),
+                content: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Text('User not found', textAlign: TextAlign.center),
+                    InkWell(
+                      onTap: ()=> ScaffoldMessenger.of(context).removeCurrentSnackBar(),
+                      child: Icon(
+                        Icons.cancel,
+                        color: Colors.white,
+                      ),
+                    )
+                  ],
+                ),
                 behavior: SnackBarBehavior.floating,
                 elevation: 0,
                 shape: new RoundedRectangleBorder(
@@ -283,7 +300,7 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                               ),
                               TextFormField(
                                 style: TextStyle(
-                                    color: Constants.myTheme.text2Color
+                                  color: Constants.myTheme.text2Color
                                 ),
                                 validator: (val){
                                   return val!.isEmpty || val.length<6 ? "Password too short (min 6 character)" : null;

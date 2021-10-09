@@ -69,6 +69,22 @@ ColorTheme getTheme(String themeName){
       signWebWallpaper: 'assets/signweb_lofi.png'
     );
   }
+  else if(themeName == 'Neon'){
+    return ColorTheme(
+      primaryColor: Color(0xFF120052),
+      secondaryColor: Color(0xFF04005E).withOpacity(0.9),
+      backgroundColor: Color(0xFF04005E).withOpacity(0.9),
+      buttonColor: Color(0xFF00C2BA),
+      borderColor: Color(0xFF3CB9FC),
+      text1Color: Colors.white,
+      text2Color: Colors.white,
+      text3Color: Colors.white,
+      bubbleChat1: Color(0xFFE92EFB).withOpacity(0.7),
+      bubbleChat2: Color(0xFF8A2BE2).withOpacity(0.7),
+      signWallpaper: 'assets/sign_lofi.png',
+      signWebWallpaper: 'assets/signweb_lofi.png'
+    );
+  }
   else{
     return ColorTheme(
       primaryColor: Colors.blue,
