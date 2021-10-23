@@ -1,10 +1,9 @@
-import 'dart:async';
 import 'dart:convert';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart';
 import 'package:nocako_chatapp/components/const.dart';
 import 'package:nocako_chatapp/components/responsive.dart';
 import 'package:nocako_chatapp/components/theme_data.dart';
@@ -12,6 +11,7 @@ import 'package:nocako_chatapp/components/components.dart';
 import 'package:nocako_chatapp/function/helper.dart';
 import 'package:nocako_chatapp/function/method.dart';
 import 'package:nocako_chatapp/views/photo_screen.dart';
+import 'package:http/http.dart' as http;
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -25,7 +25,7 @@ class ChatScreen extends StatefulWidget {
   _ChatScreenState createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin{
 
   UserMethod userMethod = new UserMethod();
   TextEditingController messageTextController = new TextEditingController();
@@ -39,22 +39,150 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() {});
   }
 
-  // fungsi untuk mengirim pesan, implemen api disini
-  // ignore: non_constant_identifier_names
-  SendMessage(String status){
-    if(messageTextController.text.isNotEmpty && messageTextController.text.trim().length > 0){
-      Map<String, dynamic> messageMap = {
-        'message': messageTextController.text,
-        'sendBy' : Constants.myId,
-        'timestamp' : DateTime.now().microsecondsSinceEpoch,
-        'isRead': false
-      };
-      userMethod.addChatMessages(widget.chatRoomId, messageMap);
-      if(status == "offline")
-        sendNotification([widget.tokenId], messageTextController.text, Constants.myName);
+  checkMessageContext(String pesan) async {
+    final response = await http.post(
+      Uri.parse('http://f707-210-210-128-130.ngrok.io/sendmessage'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'isipesan': pesan,
+      }),
+    );
+    return response.body;
+  }
+
+  SendMessage(String status) async{
+    print("Fungsi dijalankan");
+    if(messageTextController.text.isNotEmpty && messageTextController.text.trim().length > 0) {
+      String temp = await checkMessageContext(messageTextController.text);
+      print("Temp: $temp");
+      var decode = jsonDecode(temp);
+      var hasil = int.parse(decode['hasil prediksi']);
+      print("Decode: ${hasil}");
+      if (hasil == 0) {
+        print("Hasil Prediksi: $decode['hasil prediksi']");
+        Map<String, dynamic> messageMap = {
+          'message': messageTextController.text,
+          'sendBy': Constants.myId,
+          'timestamp': DateTime
+              .now()
+              .microsecondsSinceEpoch,
+          'isRead': false
+        };
+        userMethod.addChatMessages(widget.chatRoomId, messageMap);
+        if (status == "offline")
+          sendNotification(
+              [widget.tokenId], messageTextController.text, Constants.myName);
+      }
+      else if(hasil == 1){
+        print("Hasil Prediksi: $decode['hasil prediksi']");
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                backgroundColor: Constants.myTheme.buttonColor,
+                content: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Text('Pesan ini mengandung makna kasar', textAlign: TextAlign.center),
+                    InkWell(
+                      onTap: ()=> ScaffoldMessenger.of(context).clearSnackBars(),
+                      child: Icon(
+                        Icons.cancel,
+                        color: Colors.white,
+                      ),
+                    )
+                  ],
+                ),
+                behavior: SnackBarBehavior.floating,
+                elevation: 0,
+                shape: new RoundedRectangleBorder(
+                    borderRadius: new BorderRadius.circular(30.0)
+                ),
+              width: defaultWidth(context)/1.2,
+              animation: CurvedAnimation(
+                  parent: AnimationController(duration: const Duration(seconds: 1), vsync: this),
+                  curve: Curves.linear
+              ),
+            ),
+        );
+      }
     }
+    else
+      print('Gagal');
     messageTextController.text = "";
   }
+
+  // SendMessage(String status) async{
+  //   print("Fungsi dijalankan");
+  //   if(messageTextController.text.isNotEmpty && messageTextController.text.trim().length > 0) {
+  //     Map<String, dynamic> messageMap = {
+  //       'message': messageTextController.text,
+  //       'sendBy': Constants.myId,
+  //       'timestamp': DateTime
+  //           .now()
+  //           .microsecondsSinceEpoch,
+  //       'isRead': false
+  //     };
+  //     userMethod.addChatMessages(widget.chatRoomId, messageMap);
+  //     if (status == "offline")
+  //       sendNotification(
+  //           [widget.tokenId], messageTextController.text, Constants.myName);
+  //
+  //     // String temp = await checkMessageContext(messageTextController.text);
+  //     // print("Temp: $temp");
+  //     // var decode = jsonDecode(temp);
+  //     // print("Decode: ${decode['hasil prediksi']}");
+  //     // if (decode['hasil prediksi'] == 0) {
+  //     //   print("Hasil Prediksi: $decode['hasil prediksi']");
+  //     //   Map<String, dynamic> messageMap = {
+  //     //     'message': messageTextController.text,
+  //     //     'sendBy': Constants.myId,
+  //     //     'timestamp': DateTime
+  //     //         .now()
+  //     //         .microsecondsSinceEpoch,
+  //     //     'isRead': false
+  //     //   };
+  //     //   userMethod.addChatMessages(widget.chatRoomId, messageMap);
+  //     //   if (status == "offline")
+  //     //     sendNotification(
+  //     //         [widget.tokenId], messageTextController.text, Constants.myName);
+  //     // }
+  //     // else if(decode['hasil prediksi'] == 1){
+  //     //   print("Hasil Prediksi: $decode['hasil prediksi']");
+  //     //   ScaffoldMessenger.of(context).showSnackBar(
+  //     //     SnackBar(
+  //     //       backgroundColor: Constants.myTheme.buttonColor,
+  //     //       content: Row(
+  //     //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  //     //         children: [
+  //     //           Text('Pesan yang anda kirim mengandung makna kasar', textAlign: TextAlign.center),
+  //     //           InkWell(
+  //     //             onTap: ()=> ScaffoldMessenger.of(context).clearSnackBars(),
+  //     //             child: Icon(
+  //     //               Icons.cancel,
+  //     //               color: Colors.white,
+  //     //             ),
+  //     //           )
+  //     //         ],
+  //     //       ),
+  //     //       behavior: SnackBarBehavior.floating,
+  //     //       elevation: 0,
+  //     //       shape: new RoundedRectangleBorder(
+  //     //           borderRadius: new BorderRadius.circular(30.0)
+  //     //       ),
+  //     //       width: defaultWidth(context)/2,
+  //     //       animation: CurvedAnimation(
+  //     //         parent: AnimationController(duration: const Duration(seconds: 1), vsync: this),
+  //     //         curve: Curves.linear
+  //     //       ),
+  //     //     ),
+  //     //   );
+  //     // }
+  //   }
+  //   else
+  //     print('Gagal');
+  //   messageTextController.text = "";
+  // }
 
   // ignore: non_constant_identifier_names
   AutoScroll(ScrollController scrollController){

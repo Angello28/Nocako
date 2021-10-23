@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:nocako_chatapp/components/theme_data.dart';
@@ -47,6 +48,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     getLoggedInState();
+
     super.initState();
   }
 
@@ -82,7 +84,7 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ),
             SizedBox(height: defaultHeight(context)/50),
-            Text('Chat App wihout being toxic',
+            Text('Mengobrol tanpa berkata kasar',
               textAlign: TextAlign.center,
               style: TextStyle(
                   color: Constants.myTheme.text1Color,

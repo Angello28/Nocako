@@ -24,7 +24,6 @@ class _NavDrawerState extends State<NavDrawer> {
     setState(() {});
   }
 
-
   getProfileImage() async{
     Constants.myProfileImage = (await HelperFunction.getUserProfileImageSharedPreference())!;
     setState(() {});
@@ -125,7 +124,7 @@ class _NavDrawerState extends State<NavDrawer> {
             ListTile(
               leading: Icon(Icons.home, color: Constants.myTheme.text1Color, size:defaultHeight(context) / 25),
               title: Text(
-                'Home',
+                'Beranda',
                 style: TextStyle(
                     color: Constants.myTheme.text1Color,
                     fontSize: defaultHeight(context) / 45
@@ -140,7 +139,7 @@ class _NavDrawerState extends State<NavDrawer> {
             ),
             ListTile(
               leading: Icon(Icons.account_circle, color: Constants.myTheme.text1Color, size:defaultHeight(context) / 25),
-              title: Text('Profile', style: TextStyle(
+              title: Text('Profil', style: TextStyle(
                   color: Constants.myTheme.text1Color,
                   fontSize: defaultHeight(context) / 45
                 ),
@@ -152,7 +151,7 @@ class _NavDrawerState extends State<NavDrawer> {
             ),
             ListTile(
               leading: Icon(Icons.brush, color: Constants.myTheme.text1Color, size:defaultHeight(context) / 25),
-              title: Text('Theme', style: TextStyle(
+              title: Text('Tema', style: TextStyle(
                   color: Constants.myTheme.text1Color,
                   fontSize: defaultHeight(context) / 45
                 ),
@@ -166,7 +165,7 @@ class _NavDrawerState extends State<NavDrawer> {
             ),
             ListTile(
               leading: Icon(Icons.exit_to_app, color: Constants.myTheme.text1Color, size:defaultHeight(context) / 25),
-              title: Text('Sign Out', style: TextStyle(
+              title: Text('Keluar', style: TextStyle(
                   color: Constants.myTheme.text1Color,
                   fontSize: defaultHeight(context) / 45
                 ),

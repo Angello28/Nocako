@@ -37,7 +37,7 @@ class ThemeGetterAndSetter{
 }
 
 ColorTheme getTheme(String themeName){
-  if(themeName == 'Dark'){
+  if(themeName == 'Gelap'){
     return ColorTheme(
       primaryColor: Colors.black87,
       secondaryColor: Colors.black87,
