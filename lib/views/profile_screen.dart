@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -34,7 +33,7 @@ class _ProfileState extends State<Profile> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text('Profile', style: TextStyle(
+        title: Text('Profil', style: TextStyle(
           color: Constants.myTheme.text1Color
         )),
         backgroundColor: Constants.myTheme.primaryColor,
@@ -54,7 +53,7 @@ class _ProfileState extends State<Profile> {
               onTap: () {
                 if(Constants.myProfileImage != "")
                   Navigator.push(context, MaterialPageRoute(builder: (context) => PhotoScreen(
-                    title: 'Profile Image',
+                    title: 'Foto Profil',
                     imageUrl: Constants.myProfileImage,
                   )));
               },
@@ -108,7 +107,7 @@ class _ProfileState extends State<Profile> {
                       children: [
                         ListTile(
                           title: Text(
-                            'Change Profile Picture',
+                            'Ganti foto profil',
                             style: TextStyle(
                               color: Constants.myTheme.text2Color
                             ),
@@ -128,7 +127,7 @@ class _ProfileState extends State<Profile> {
                         ),
                         ListTile(
                           title: Text(
-                            'Delete Profile Picture',
+                            'Hapus foto profil',
                             style: TextStyle(
                               color: Constants.myTheme.text2Color
                             ),
@@ -147,7 +146,7 @@ class _ProfileState extends State<Profile> {
                   }
                 );
               },
-              child: Text('Edit Photo', style: TextStyle(
+              child: Text('Edit foto', style: TextStyle(
                 color: Constants.myTheme.buttonColor,
                 fontSize: defaultHeight(context)/50,
               )),
@@ -184,7 +183,7 @@ class _ProfileState extends State<Profile> {
                             backgroundColor: Constants.myTheme.backgroundColor,
                             buttonPadding: EdgeInsets.only(right: defaultWidth(context)/10),
                             title: Text(
-                              'Enter New Username',
+                              'Masukkan Nama Baru',
                               style: TextStyle(
                                 color: Constants.myTheme.text2Color
                               ),
@@ -206,7 +205,7 @@ class _ProfileState extends State<Profile> {
                             actions: [
                               InkWell(
                                 child: Text(
-                                  'Cancel',
+                                  'Batal',
                                   style: TextStyle(
                                     color: Constants.myTheme.text2Color
                                   ),
@@ -215,7 +214,7 @@ class _ProfileState extends State<Profile> {
                               ),
                               InkWell(
                                 child: Text(
-                                  'Change',
+                                  'Ubah',
                                   style: TextStyle(
                                     color: Constants.myTheme.buttonColor
                                   ),

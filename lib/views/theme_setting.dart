@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:grouped_list/grouped_list.dart';
 import 'package:nocako_chatapp/components/const.dart';
 import 'package:nocako_chatapp/components/theme_data.dart';
 
+// ignore: must_be_immutable
 class ThemeSetting extends StatefulWidget {
-  const ThemeSetting({Key? key}) : super(key: key);
-
   @override
   _ThemeSettingState createState() => _ThemeSettingState();
 }
 
 class _ThemeSettingState extends State<ThemeSetting> {
-  List<String> themeList = ["Default", "Dark", "Lofi", "Neon"];
+  List<String> themeList = ["Default", "Gelap", "Lofi", "Neon"];
 
   getThemeFromPreferences() async{
     Constants.myThemeName = (await ThemeGetterAndSetter.getThemeSharedPreferences())!;
@@ -25,8 +23,10 @@ class _ThemeSettingState extends State<ThemeSetting> {
     getThemeFromPreferences();
     return Scaffold(
       appBar: AppBar(
-        title: Text('Theme', style: TextStyle(
-          color: Constants.myTheme.text1Color
+        title: Text(
+          'Tema',
+          style: TextStyle(
+            color: Constants.myTheme.text1Color
         )),
         backgroundColor: Constants.myTheme.primaryColor,
         iconTheme: IconThemeData(color: Constants.myTheme.text1Color),

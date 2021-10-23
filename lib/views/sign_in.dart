@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:nocako_chatapp/components/components.dart';
@@ -20,7 +21,6 @@ class SignIn extends StatefulWidget {
 }
 
 class _SignInState extends State<SignIn> with TickerProviderStateMixin{
-
   bool isLoading = false;
 
   Authentication authentication = new Authentication();
@@ -43,8 +43,11 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
       });
       await authentication.signInWithEmailAndPassword(emailTextController.text, passwordTextController.text).then((value) async{
         if(value!=null){
-          var status = await OneSignal.shared.getDeviceState();
-          String? tokenId = status!.userId;
+          String? tokenId = "";
+          if(!kIsWeb){
+            var status = await OneSignal.shared.getDeviceState();
+            tokenId = status!.userId;
+          }
 
           QuerySnapshot userInfo = await userMethod.getUserByUserEmail(emailTextController.text);
           await userMethod.updateToken(userInfo.docs[0]['id'], tokenId!);
@@ -64,9 +67,9 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                 content: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Text('User not found', textAlign: TextAlign.center),
+                    Text('Pengguna tidak ditemukan', textAlign: TextAlign.center),
                     InkWell(
-                      onTap: ()=> ScaffoldMessenger.of(context).removeCurrentSnackBar(),
+                      onTap: ()=> ScaffoldMessenger.of(context).clearSnackBars(),
                       child: Icon(
                         Icons.cancel,
                         color: Colors.white,
@@ -125,11 +128,11 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Welcome back,', style: TextStyle(
+                        Text('Selamat datang,', style: TextStyle(
                           color: Constants.myTheme.text1Color,
                           fontSize: defaultHeight(context)/25
                         )),
-                        Text('Sign In', style: TextStyle(
+                        Text('Masuk', style: TextStyle(
                           color: Constants.myTheme.text1Color,
                           fontSize: defaultHeight(context)/13
                         )),
@@ -149,7 +152,7 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                                   color: Constants.myTheme.text2Color
                                 ),
                                 validator: (val){
-                                  return RegExp(regexSource).hasMatch(val!) ? null : "Invalid email";
+                                  return RegExp(regexSource).hasMatch(val!) ? null : "Email tidak valid";
                                 },
                                 controller: emailTextController,
                                 decoration: InputDecoration(
@@ -167,7 +170,7 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                                   color: Constants.myTheme.text2Color
                                 ),
                                 validator: (val){
-                                  return val!.isEmpty || val.length<6 ? "Password too short (min 6 character)" : null;
+                                  return val!.isEmpty || val.length<6 ? "Kata sandi terlalu pendek (minimal 6 karakter)" : null;
                                 },
                                 controller: passwordTextController,
                                 decoration: InputDecoration(
@@ -177,7 +180,7 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                                   focusedBorder: UnderlineInputBorder(
                                       borderSide: BorderSide(color: Constants.myTheme.buttonColor)
                                   ),
-                                  hintText: 'Password', hintStyle: TextStyle(color: Constants.myTheme.text2Color)
+                                  hintText: 'Kata Sandi', hintStyle: TextStyle(color: Constants.myTheme.text2Color)
                                 ),
                                 obscureText: true,
                               ),
@@ -190,7 +193,7 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                           children: [
                             InkWell(
                               onTap: (){},
-                              child: Text('Forgot Password?', textAlign: TextAlign.end, style: TextStyle(
+                              child: Text('Lupa kata sandi?', textAlign: TextAlign.end, style: TextStyle(
                                 color: Constants.myTheme.text2Color)
                               ),
                             ),
@@ -206,154 +209,18 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                                 borderRadius: new BorderRadius.circular(30.0),),
                               minimumSize: Size(defaultWidth(context)/1.5, defaultHeight(context)/20),
                             ),
-                            child: Text('Sign In', style: TextStyle(color: Constants.myTheme.text1Color))
+                            child: Text('Masuk', style: TextStyle(color: Constants.myTheme.text1Color))
                         ),
                         SizedBox(height: defaultHeight(context)/30),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text('Don\'t have account?', style: TextStyle(color: Constants.myTheme.text2Color)),
+                            Text('Belum punya akun?', style: TextStyle(color: Constants.myTheme.text2Color)),
                             InkWell(
                               onTap: (){
                                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SignUp()));
                               },
-                              child: Text(' Register Now',
-                                textAlign: TextAlign.end,
-                                style: TextStyle(
-                                  decoration: TextDecoration.underline,
-                                  color: Constants.myTheme.buttonColor
-                                ),
-                              )
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: defaultHeight(context)/10),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        tablet: Container(
-          width: defaultWidth(context),
-          height: defaultHeight(context),
-          color: Constants.myTheme.backgroundColor,
-          child: SingleChildScrollView(
-            child: Container(
-              width: defaultWidth(context),
-              height: defaultHeight(context),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: defaultHeight(context)/50),
-                    height: defaultHeight(context)/2,
-                    width: defaultWidth(context),
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage(Constants.myTheme.signWallpaper),
-                        fit: BoxFit.cover
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Welcome back,', style: TextStyle(
-                          color: Constants.myTheme.text1Color,
-                          fontSize: defaultHeight(context)/25
-                        )),
-                        Text('Sign In', style: TextStyle(
-                          color: Constants.myTheme.text1Color,
-                          fontSize: defaultHeight(context)/13
-                        )),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: defaultHeight(context)/50),
-                    child: Column(
-                      children: [
-                        Form(
-                          key: formKey,
-                          child: Column(
-                            children: [
-                              TextFormField(
-                                style: TextStyle(
-                                  color: Constants.myTheme.text2Color
-                                ),
-                                validator: (val){
-                                  return RegExp(regexSource).hasMatch(val!) ? null : "Invalid email";
-                                },
-                                controller: emailTextController,
-                                decoration: InputDecoration(
-                                  enabledBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(color: Constants.myTheme.borderColor)
-                                  ),
-                                  focusedBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(color: Constants.myTheme.buttonColor)
-                                  ),
-                                  hintText: 'Email', hintStyle: TextStyle(color: Constants.myTheme.text2Color)
-                                ),
-                              ),
-                              TextFormField(
-                                style: TextStyle(
-                                  color: Constants.myTheme.text2Color
-                                ),
-                                validator: (val){
-                                  return val!.isEmpty || val.length<6 ? "Password too short (min 6 character)" : null;
-                                },
-                                controller: passwordTextController,
-                                decoration: InputDecoration(
-                                  enabledBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(color: Constants.myTheme.borderColor)
-                                  ),
-                                  focusedBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(color: Constants.myTheme.buttonColor)
-                                  ),
-                                  hintText: 'Password', hintStyle: TextStyle(color: Constants.myTheme.text2Color)
-                                ),
-                                obscureText: true,
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(height: defaultHeight(context)/30),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            InkWell(
-                              onTap: (){},
-                              child: Text('Forgot Password?', textAlign: TextAlign.end, style: TextStyle(
-                                color: Constants.myTheme.text2Color)
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: defaultHeight(context)/30),
-                        ElevatedButton(
-                            onPressed: () => signInValidator(),
-                            style: ElevatedButton.styleFrom(
-                              primary: Constants.myTheme.buttonColor,
-                              textStyle: TextStyle(fontSize: defaultHeight(context)/40),
-                              shape: new RoundedRectangleBorder(
-                                borderRadius: new BorderRadius.circular(30.0),),
-                              minimumSize: Size(defaultWidth(context)/1.5, defaultHeight(context)/20),
-                            ),
-                            child: Text('Sign In', style: TextStyle(color: Constants.myTheme.text1Color))
-                        ),
-                        SizedBox(height: defaultHeight(context)/30),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text('Don\'t have account?', style: TextStyle(color: Constants.myTheme.text2Color)),
-                            InkWell(
-                              onTap: (){
-                                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SignUp()));
-                              },
-                              child: Text(' Register Now',
+                              child: Text(' Daftar sekarang',
                                 textAlign: TextAlign.end,
                                 style: TextStyle(
                                   decoration: TextDecoration.underline,
@@ -415,11 +282,11 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('Welcome back,', style: TextStyle(
+                        Text('Selamat datang,', style: TextStyle(
                           color: Constants.myTheme.text2Color,
                           fontSize: defaultHeight(context)/15
                         )),
-                        Text('Sign In', style: TextStyle(
+                        Text('Masuk', style: TextStyle(
                           color: Constants.myTheme.text2Color,
                           fontSize: defaultHeight(context)/10
                         )),
@@ -433,7 +300,7 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                                   color: Constants.myTheme.text2Color
                                 ),
                                 validator: (val){
-                                  return RegExp(regexSource).hasMatch(val!) ? null : "Invalid email";
+                                  return RegExp(regexSource).hasMatch(val!) ? null : "Email tidak valid";
                                 },
                                 controller: emailTextController,
                                 decoration: InputDecoration(
@@ -451,7 +318,7 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                                   color: Constants.myTheme.text2Color
                                 ),
                                 validator: (val){
-                                  return val!.isEmpty || val.length<6 ? "Password too short (min 6 character)" : null;
+                                  return val!.isEmpty || val.length<6 ? "Kata sandi terlalu pendek (minimal 6 karakter)" : null;
                                 },
                                 controller: passwordTextController,
                                 decoration: InputDecoration(
@@ -461,7 +328,7 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                                   focusedBorder: UnderlineInputBorder(
                                     borderSide: BorderSide(color: Constants.myTheme.buttonColor)
                                   ),
-                                  hintText: 'Password', hintStyle: TextStyle(color: Constants.myTheme.text2Color)
+                                  hintText: 'Kata Sandi', hintStyle: TextStyle(color: Constants.myTheme.text2Color)
                                 ),
                                 obscureText: true,
                               ),
@@ -474,7 +341,7 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                           children: [
                             InkWell(
                               onTap: (){},
-                              child: Text('Forgot Password?', textAlign: TextAlign.end, style: TextStyle(
+                              child: Text('Lupa kata sandi?', textAlign: TextAlign.end, style: TextStyle(
                                 color: Constants.myTheme.text2Color)
                               ),
                             ),
@@ -490,18 +357,18 @@ class _SignInState extends State<SignIn> with TickerProviderStateMixin{
                                 borderRadius: new BorderRadius.circular(30.0),),
                               fixedSize: Size(defaultWidth(context)/5, defaultHeight(context)/20),
                             ),
-                            child: Text('Sign In', style: TextStyle(color: Constants.myTheme.text1Color))
+                            child: Text('Masuk', style: TextStyle(color: Constants.myTheme.text1Color))
                         ),
                         SizedBox(height: defaultHeight(context)/30),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text('Don\'t have account?', style: TextStyle(color: Constants.myTheme.text2Color)),
+                            Text('Belum punya akun?', style: TextStyle(color: Constants.myTheme.text2Color)),
                             InkWell(
                               onTap: (){
                                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SignUp()));
                               },
-                              child: Text(' Register Now',
+                              child: Text(' Daftar Sekarang',
                                 textAlign: TextAlign.end,
                                 style: TextStyle(
                                   decoration: TextDecoration.underline,

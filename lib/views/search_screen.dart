@@ -76,7 +76,7 @@ class _SearchState extends State<Search>{
       appBar: AppBar(
         backgroundColor: Constants.myTheme.primaryColor,
         iconTheme: IconThemeData(color: Constants.myTheme.text1Color),
-        title: Text('Search', style: TextStyle(color: Constants.myTheme.text1Color)),
+        title: Text('Cari', style: TextStyle(color: Constants.myTheme.text1Color)),
         backwardsCompatibility: false,
         systemOverlayStyle: SystemUiOverlayStyle(statusBarIconBrightness: Brightness.light),
       ),
@@ -98,7 +98,7 @@ class _SearchState extends State<Search>{
                   focusedBorder: UnderlineInputBorder(
                     borderSide: BorderSide(color: Constants.myTheme.buttonColor)
                   ),
-                  hintText: 'Search username', hintStyle: TextStyle(color: Constants.myTheme.text2Color)
+                  hintText: 'Cari nama pengguna', hintStyle: TextStyle(color: Constants.myTheme.text2Color)
                 ),
                 enabled: true,
               ),
@@ -111,8 +111,9 @@ class _SearchState extends State<Search>{
                     children: [
                       tempSearchStore.length == 0 && queryResultSet.length == 0 ?
                       Container(
+                        height: defaultHeight(context)/1.5,
                         child: Center(
-                          child: Text('Search for chat',
+                          child: Text('Cari teman untuk memulai percakapan',
                             style: TextStyle(
                               color: Constants.myTheme.text2Color
                             )

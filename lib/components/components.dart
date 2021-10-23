@@ -22,10 +22,13 @@ class ChatRoomTile extends StatefulWidget {
   final String chatProfileImgUrl;
   final String tokenId;
   final void Function(String) getChatId;
+  final void Function(String) getImgUrl;
+  final void Function(String) getTokenId;
   final void Function(Stream<QuerySnapshot>) getChatStream;
   ChatRoomTile({
     required this.username, required this.chatRoomId, required this.chatProfileImgUrl,
-    required this.tokenId, required this.getChatId,required this.getChatStream
+    required this.tokenId, required this.getChatId, required this.getImgUrl, required this.getTokenId,
+    required this.getChatStream
   });
 
   @override
@@ -36,7 +39,7 @@ class _ChatRoomTileState extends State<ChatRoomTile> {
   getThemeFromPreferences() async{
     Constants.myThemeName = (await ThemeGetterAndSetter.getThemeSharedPreferences())!;
     Constants.myTheme = getTheme(Constants.myThemeName);
-    setState(() {});
+    if(mounted) {setState(() {});}
   }
 
   @override
@@ -53,7 +56,10 @@ class _ChatRoomTileState extends State<ChatRoomTile> {
                 return FutureBuilder(
                   future: UserMethod().getUsernameById(snapshot.data!.docs[0]['sendBy']),
                   builder: (context, future2) => ListTile (
-                    contentPadding: EdgeInsets.symmetric(vertical: defaultHeight(context)/80, horizontal: defaultWidth(context)/20),
+                    contentPadding: EdgeInsets.symmetric(
+                      vertical: Responsive.isMobile(context) ? defaultHeight(context)/80 : defaultWidth(context)/100,
+                      horizontal: Responsive.isMobile(context) ? defaultWidth(context)/20 : defaultHeight(context)/80
+                    ),
                     leading: InkWell(
                       onTap: (){
                         if(widget.chatProfileImgUrl != "") {
@@ -226,7 +232,7 @@ class _ChatRoomTileState extends State<ChatRoomTile> {
                       )
                     ),
                     onTap: (){
-                      if(Responsive.isMobile(context) || Responsive.isTablet(context)){
+                      if(Responsive.isMobile(context)){
                         Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(
                           chatRoomId: widget.chatRoomId,
                           chatRoomStream: UserMethod().getChatMessages(widget.chatRoomId),
@@ -238,6 +244,8 @@ class _ChatRoomTileState extends State<ChatRoomTile> {
                         setState(() {
                           widget.getChatId(widget.chatRoomId);
                           widget.getChatStream(UserMethod().getChatMessages(widget.chatRoomId));
+                          widget.getImgUrl(widget.chatProfileImgUrl);
+                          widget.getTokenId(widget.tokenId);
                         });
                       }
                     },
@@ -249,13 +257,13 @@ class _ChatRoomTileState extends State<ChatRoomTile> {
                             backgroundColor: Constants.myTheme.backgroundColor,
                             buttonPadding: EdgeInsets.only(right: defaultWidth(context)/10),
                             title: Text(
-                              'Delete Chat (${future.data.toString()})',
+                              'Hapus Obrolan (${future.data.toString()})',
                               style: TextStyle(
                                   color: Constants.myTheme.text2Color
                               ),
                             ),
                             content: Text(
-                              'Warning: Once you delete this chat, you can\'t recover it anymore. Are you sure want to delete this chat?',
+                              'Peringatan: Anda tidak bisa mengembalikan percakapan ini ketika sudah dihapus. Apakah anda yakin ingin menghapus percakapan?',
                               style: TextStyle(
                                   color: Constants.myTheme.text2Color
                               ),
@@ -263,7 +271,7 @@ class _ChatRoomTileState extends State<ChatRoomTile> {
                             actions: [
                               InkWell(
                                 child: Text(
-                                  'Cancel',
+                                  'Batal',
                                   style: TextStyle(
                                       color: Constants.myTheme.text2Color
                                   ),
@@ -272,13 +280,14 @@ class _ChatRoomTileState extends State<ChatRoomTile> {
                               ),
                               InkWell(
                                 child: Text(
-                                  'Delete',
+                                  'Hapus',
                                   style: TextStyle(
                                       color: Constants.myTheme.buttonColor
                                   ),
                                 ),
                                 onTap: () {
                                   UserMethod().deleteChatMessages(widget.chatRoomId);
+                                  widget.getChatId("");
                                   Navigator.pop(context);
                                 },
                               ),
@@ -307,8 +316,13 @@ class _ChatRoomTileState extends State<ChatRoomTile> {
 class ChatRoomList extends StatefulWidget {
   final Stream<QuerySnapshot> chatRoomStream;
   final void Function(String) getChatIdFromList;
+  final void Function(String) getImgUrlFromList;
+  final void Function(String) getTokenIdFromList;
   final void Function(Stream<QuerySnapshot>) getStreamFromList;
-  ChatRoomList({required this.chatRoomStream, required this.getChatIdFromList, required this.getStreamFromList});
+  ChatRoomList({
+    required this.chatRoomStream, required this.getChatIdFromList, required this.getImgUrlFromList,
+    required this.getTokenIdFromList, required this.getStreamFromList
+  });
 
   @override
   _ChatRoomListState createState() => _ChatRoomListState();
@@ -322,6 +336,7 @@ class _ChatRoomListState extends State<ChatRoomList> {
       builder: (context, snapshot){
         if(snapshot.data!.docs.length != 0) {
           return Container(
+            padding: EdgeInsets.symmetric(horizontal: defaultWidth(context)/100),
             child: ListView.builder(
               shrinkWrap: true,
               itemCount: snapshot.data!.docs.length,
@@ -340,9 +355,11 @@ class _ChatRoomListState extends State<ChatRoomList> {
                           username: snapshot.data!.docs[index]['chatroomid'].toString().replaceAll("_", "").replaceAll(Constants.myId, ""),
                           chatRoomId: snapshot.data!.docs[index]['chatroomid'],
                           chatProfileImgUrl: future.data.toString(),
+                          tokenId: future2.data.toString(),
                           getChatId: widget.getChatIdFromList,
                           getChatStream: widget.getStreamFromList,
-                          tokenId: future2.data.toString(),
+                          getImgUrl: widget.getImgUrlFromList,
+                          getTokenId: widget.getTokenIdFromList,
                         );
                       },
                     );
@@ -365,7 +382,7 @@ class _ChatRoomListState extends State<ChatRoomList> {
                   size: defaultHeight(context)/10,
                 ),
                 SizedBox(height: defaultHeight(context)/50),
-                Text('No Conversation',
+                Text('Tidak ada percakapan',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Constants.myTheme.text2Color,
@@ -374,7 +391,7 @@ class _ChatRoomListState extends State<ChatRoomList> {
                   ),
                 ),
                 SizedBox(height: defaultHeight(context)/50),
-                Text('Start chatting with people',
+                Text('Cari teman dan mulai mengobrol',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Constants.myTheme.text2Color,
@@ -431,9 +448,9 @@ class _ChatBubbleState extends State<ChatBubble>{
                   content: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      Text('Message copied to clipboard', textAlign: TextAlign.center),
+                      Text('Pesan disalin', textAlign: TextAlign.center),
                       InkWell(
-                        onTap: ()=> ScaffoldMessenger.of(context).removeCurrentSnackBar(),
+                        onTap: ()=> ScaffoldMessenger.of(context).clearSnackBars(),
                         child: Icon(
                           Icons.cancel,
                           color: Colors.white,
@@ -446,7 +463,7 @@ class _ChatBubbleState extends State<ChatBubble>{
                   shape: new RoundedRectangleBorder(
                     borderRadius: new BorderRadius.circular(30.0)
                   ),
-                  width: defaultWidth(context)/1.4,
+                  width: defaultWidth(context)/2,
                   animation: CurvedAnimation(
                     parent: AnimationController(duration: const Duration(seconds: 1), vsync: widget.tickerProvider),
                     curve: Curves.linear
@@ -596,9 +613,15 @@ class UserTile extends StatefulWidget {
   final String profileImg;
   final String tokenId;
   final SearchMethod searchMethod;
+  final void Function(String)? getChatId;
+  final void Function(String)? getImgUrl;
+  final void Function(String)? getTokenId;
+  final void Function(Stream<QuerySnapshot>)? getChatStream;
+
   UserTile({
-    required this.userId, required this.username, required this.email,
-    required this.profileImg, required this.tokenId, required this.searchMethod
+    required this.userId, required this.username, required this.email, required this.profileImg,
+    required this.tokenId, required this.searchMethod, this.getChatId, this.getImgUrl,
+    this.getTokenId, this.getChatStream
   });
 
   @override
@@ -627,21 +650,21 @@ class _UserTileState extends State<UserTile> with TickerProviderStateMixin{
           child: ClipOval(
             child: widget.profileImg == "" ?
             Icon(
-                Icons.account_circle,
-                color: Constants.myTheme.buttonColor,
-                size: defaultHeight(context)/16
+              Icons.account_circle,
+              color: Constants.myTheme.buttonColor,
+              size: defaultHeight(context)/16
             )
                 :
             CachedNetworkImage(
               imageUrl: widget.profileImg,
               placeholder: (context, url) => Container(
-                  width: defaultHeight(context)/16,
-                  height: defaultHeight(context)/16,
-                  child: Icon(
-                      Icons.account_circle,
-                      color: Constants.myTheme.buttonColor,
-                      size: defaultHeight(context)/16
-                  )
+                width: defaultHeight(context)/16,
+                height: defaultHeight(context)/16,
+                child: Icon(
+                  Icons.account_circle,
+                  color: Constants.myTheme.buttonColor,
+                  size: defaultHeight(context)/16
+                )
               ),
               fit: BoxFit.cover,
               width: defaultHeight(context)/16,
@@ -664,14 +687,31 @@ class _UserTileState extends State<UserTile> with TickerProviderStateMixin{
           fontSize: defaultHeight(context)/55
         )
       ),
-      onTap: (){
-        widget.searchMethod.StartChatting(
-          userId: widget.userId,
-          profileImg: widget.profileImg,
-          context: context,
-          tokenId: widget.tokenId,
-          tickerProvider: this
-        );
+      onTap: () async {
+        if(Responsive.isMobile(context)){
+          widget.searchMethod.StartChatting(
+            userId: widget.userId,
+            profileImg: widget.profileImg,
+            context: context,
+            tokenId: widget.tokenId,
+            tickerProvider: this
+          );
+        }
+        else{
+          List<String> users = [widget.userId, Constants.myId];
+          String chatroomid = SearchMethod().returnChatId(widget.userId, Constants.myId);
+          Map<String, dynamic> chatRoomMap = {
+            "users": users,
+            "chatroomid": chatroomid
+          };
+          await UserMethod().createChatRoom(chatroomid, chatRoomMap);
+          setState(() {
+            widget.getChatId!(chatroomid);
+            widget.getChatStream!(UserMethod().getChatMessages(chatroomid));
+            widget.getImgUrl!(widget.profileImg);
+            widget.getTokenId!(widget.tokenId);
+          });
+        }
       },
     );
   }

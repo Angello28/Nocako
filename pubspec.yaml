@@ -28,6 +28,7 @@ dependencies:
   cloud_firestore:
   firebase_core:
   firebase_app_check:
+  firebase_app_check_web:
   shared_preferences:
   intl:
   cached_network_image:
